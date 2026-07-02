@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Barber Kings — Agenda tu cita</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f0f0f;
+      color: #f0f0f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px;
+    }
+    h1 { font-size: 2rem; margin-bottom: 4px; color: #c9a84c; }
+    .subtitulo { color: #888; margin-bottom: 32px; font-size: 0.95rem; }
+    .card {
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 28px;
+      width: 100%;
+      max-width: 480px;
+      margin-bottom: 16px;
+    }
+    .card h2 { font-size: 1rem; color: #c9a84c; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+    label { display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 4px; margin-top: 12px; }
+    input, select {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #111;
+      color: #f0f0f0;
+      font-size: 0.95rem;
+    }
+    input:focus, select:focus { outline: none; border-color: #c9a84c; }
+    .opciones {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .opcion {
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .opcion:hover { border-color: #c9a84c; }
+    .opcion.seleccionado { border-color: #c9a84c; background: #2a2010; }
+    .opcion .nombre { font-size: 0.9rem; font-weight: 600; }
+    .opcion .detalle { font-size: 0.78rem; color: #888; margin-top: 4px; }
+    .slots {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .slot {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .slot:hover { border-color: #c9a84c; }
+    .slot.seleccionado { border-color: #c9a84c; background: #2a2010; color: #c9a84c; }
+    .slot.ocupado { opacity: 0.3; cursor: not-allowed; border-color: #222; }
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: #c9a84c;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: #e0bc6a; }
+    .btn:disabled { background: #444; color: #666; cursor: not-allowed; }
+    .mensaje {
+      text-align: center;
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 8px;
+      display: none;
+    }
+    .mensaje.exito { background: #0d2b1a; color: #4caf7d; border: 1px solid #4caf7d; display: block; }
+    .mensaje.error { background: #2b0d0d; color: #f44; border: 1px solid #f44; display: block; }
+    #seccion-horario, #seccion-datos, #seccion-confirmar { display: none; }
+    .spinner { display: none; text-align: center; color: #888; margin: 8px 0; }
+  </style>
+</head>
+<body>
+
+<h1>✂️ Barber Kings</h1>
+<p class="subtitulo">Agenda tu cita en segundos</p>
+
+<!-- PASO 1: Servicio -->
+<div class="card">
+  <h2>1. Elige tu servicio</h2>
+  <div class="opciones" id="lista-servicios">
+    <div class="spinner">Cargando servicios...</div>
+  </div>
+</div>
+
+<!-- PASO 2: Barbero -->
+<div class="card">
+  <h2>2. Elige tu barbero</h2>
+  <div class="opciones" id="lista-barberos">
+    <div class="spinner">Cargando barberos...</div>
+  </div>
+</div>
+
+<!-- PASO 3: Fecha y hora -->
+<div class="card" id="seccion-horario">
+  <h2>3. Elige fecha y hora</h2>
+  <label>Fecha</label>
+  <input type="date" id="input-fecha" min="" />
+  <label style="margin-top:16px">Horarios disponibles</label>
+  <div class="spinner" id="spinner-slots">Cargando horarios...</div>
+  <div class="slots" id="lista-slots"></div>
+</div>
+
+<!-- PASO 4: Datos del cliente -->
+<div class="card" id="seccion-datos">
+  <h2>4. Tus datos</h2>
+  <label>Nombre completo</label>
+  <input type="text" id="input-nombre" placeholder="Ej: Juan Pérez" />
+  <label>Número de WhatsApp</label>
+  <input type="tel" id="input-telefono" placeholder="+573001234567" />
+</div>
+
+<!-- PASO 5: Confirmar -->
+<div class="card" id="seccion-confirmar">
+  <h2>5. Confirmar cita</h2>
+  <div id="resumen" style="color:#aaa; font-size:0.9rem; line-height:1.8; margin-bottom:16px;"></div>
+  <button class="btn" id="btn-agendar" onclick="agendarCita()">Agendar cita por WhatsApp</button>
+  <div class="mensaje" id="mensaje-resultado"></div>
+</div>
+
+<script>
+  // ══════════════════════════════════════════
+  // CONFIGURACIÓN — reemplaza con tus valores
+  // ══════════════════════════════════════════
+  const SUPABASE_URL  = 'https://hkcpfkjljgbbdrtwsjbr.supabase.co';
+  const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrY3Bma2psamdiYmRydHdzamJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NTQ3MTUsImV4cCI6MjA5ODQzMDcxNX0.0KWTzJ__5A7w1rFu7CoUdjdapGgpGs9dVLc6ZZsLLj4';
+  const BARBERIA_ID   = 'f8566d72-7b42-4b79-ae2f-aeb4168d3ef3';
+  const DOMINIO_CANCEL = 'https://danielrom3ro1.github.io/barberia-saas';
+
+  // Estado de la sesión de booking
+  const estado = {
+    servicioId: null, servicioNombre: null, servicioDuracion: null, servicioPrice: null,
+    barberoId: null, barberoNombre: null,
+    fecha: null, horaInicio: null, horaFin: null
+  };
+
+  // Función base para llamar a Supabase
+  async function supabase(tabla, params = '') {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${tabla}?${params}`, {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`
+      }
+    });
+    return res.json();
+  }
+
+  // ── Cargar servicios al abrir la página ──
+  async function cargarServicios() {
+    const servicios = await supabase('servicio', `barberia_id=eq.${BARBERIA_ID}&activo=eq.true&select=id,nombre,duracion_min,precio`);
+    const cont = document.getElementById('lista-servicios');
+    cont.innerHTML = '';
+    servicios.forEach(s => {
+      const div = document.createElement('div');
+      div.className = 'opcion';
+      div.innerHTML = `<div class="nombre">${s.nombre}</div><div class="detalle">${s.duracion_min} min · $${Number(s.precio).toLocaleString('es-CO')} COP</div>`;
+      div.onclick = () => seleccionarServicio(s, div);
+      cont.appendChild(div);
+    });
+  }
+
+  // ── Cargar barberos ──
+  async function cargarBarberos() {
+    const barberos = await supabase('barbero', `barberia_id=eq.${BARBERIA_ID}&activo=eq.true&select=id,nombre`);
+    const cont = document.getElementById('lista-barberos');
+    cont.innerHTML = '';
+    barberos.forEach(b => {
+      const div = document.createElement('div');
+      div.className = 'opcion';
+      div.innerHTML = `<div class="nombre">💈 ${b.nombre}</div>`;
+      div.onclick = () => seleccionarBarbero(b, div);
+      cont.appendChild(div);
+    });
+  }
+
+  function seleccionarServicio(s, el) {
+    document.querySelectorAll('#lista-servicios .opcion').forEach(e => e.classList.remove('seleccionado'));
+    el.classList.add('seleccionado');
+    estado.servicioId = s.id;
+    estado.servicioNombre = s.nombre;
+    estado.servicioDuracion = s.duracion_min;
+    estado.servicioPrice = s.precio;
+    verificarMostrarHorario();
+  }
+
+  function seleccionarBarbero(b, el) {
+    document.querySelectorAll('#lista-barberos .opcion').forEach(e => e.classList.remove('seleccionado'));
+    el.classList.add('seleccionado');
+    estado.barberoId = b.id;
+    estado.barberoNombre = b.nombre;
+    verificarMostrarHorario();
+  }
+
+  function verificarMostrarHorario() {
+    if (estado.servicioId && estado.barberoId) {
+      document.getElementById('seccion-horario').style.display = 'block';
+      const hoy = new Date().toISOString().split('T')[0];
+      document.getElementById('input-fecha').min = hoy;
+      document.getElementById('input-fecha').onchange = cargarSlots;
+    }
+  }
+
+  // ── Cargar slots de horario disponibles ──
+  async function cargarSlots() {
+    const fecha = document.getElementById('input-fecha').value;
+    if (!fecha) return;
+    estado.fecha = fecha;
+    estado.horaInicio = null;
+    estado.horaFin = null;
+
+    document.getElementById('spinner-slots').style.display = 'block';
+    document.getElementById('lista-slots').innerHTML = '';
+
+    // Traer bloques disponibles del barbero ese día
+    const disponibilidad = await supabase('disponibilidad',
+      `barbero_id=eq.${estado.barberoId}&fecha=eq.${fecha}&tipo=eq.disponible&select=hora_inicio,hora_fin`
+    );
+
+    // Traer citas ya agendadas ese día para ese barbero
+    const citasExistentes = await supabase('cita',
+      `barbero_id=eq.${estado.barberoId}&inicio=gte.${fecha}T00:00:00&inicio=lte.${fecha}T23:59:59&estado=neq.cancelada&select=inicio,fin`
+    );
+
+    document.getElementById('spinner-slots').style.display = 'none';
+    const cont = document.getElementById('lista-slots');
+
+    if (!disponibilidad.length) {
+      cont.innerHTML = '<p style="color:#888;font-size:0.85rem">No hay disponibilidad para esta fecha.</p>';
+      return;
+    }
+
+    // Generar slots cada X minutos según duración del servicio
+    disponibilidad.forEach(bloque => {
+      let [hIni, mIni] = bloque.hora_inicio.split(':').map(Number);
+      const [hFin, mFin] = bloque.hora_fin.split(':').map(Number);
+      const finMinutos = hFin * 60 + mFin;
+
+      while (hIni * 60 + mIni + estado.servicioDuracion <= finMinutos) {
+        const slotIni = `${String(hIni).padStart(2,'0')}:${String(mIni).padStart(2,'0')}`;
+        const finSlot = hIni * 60 + mIni + estado.servicioDuracion;
+        const slotFin = `${String(Math.floor(finSlot/60)).padStart(2,'0')}:${String(finSlot%60).padStart(2,'0')}`;
+
+        // Verificar si el slot está ocupado
+        const ocupado = citasExistentes.some(c => {
+          const cIni = new Date(c.inicio).toTimeString().slice(0,5);
+          const cFin = new Date(c.fin).toTimeString().slice(0,5);
+          return slotIni < cFin && slotFin > cIni;
+        });
+
+        const div = document.createElement('div');
+        div.className = 'slot' + (ocupado ? ' ocupado' : '');
+        div.textContent = slotIni;
+        if (!ocupado) {
+          div.onclick = () => seleccionarSlot(slotIni, slotFin, div);
+        }
+        cont.appendChild(div);
+
+        mIni += estado.servicioDuracion;
+        if (mIni >= 60) { hIni += Math.floor(mIni/60); mIni = mIni % 60; }
+      }
+    });
+
+    document.getElementById('seccion-datos').style.display = 'block';
+  }
+
+  function seleccionarSlot(ini, fin, el) {
+    document.querySelectorAll('.slot').forEach(e => e.classList.remove('seleccionado'));
+    el.classList.add('seleccionado');
+    estado.horaInicio = ini;
+    estado.horaFin = fin;
+    actualizarResumen();
+    document.getElementById('seccion-confirmar').style.display = 'block';
+  }
+
+  function actualizarResumen() {
+    document.getElementById('resumen').innerHTML = `
+      💈 <b>Servicio:</b> ${estado.servicioNombre}<br>
+      👤 <b>Barbero:</b> ${estado.barberoNombre}<br>
+      📅 <b>Fecha:</b> ${estado.fecha}<br>
+      🕐 <b>Hora:</b> ${estado.horaInicio}<br>
+      💰 <b>Precio:</b> $${Number(estado.servicioPrice).toLocaleString('es-CO')} COP
+    `;
+  }
+
+  // ── Agendar la cita ──
+  async function agendarCita() {
+    const nombre = document.getElementById('input-nombre').value.trim();
+    const telefono = document.getElementById('input-telefono').value.trim();
+    const msg = document.getElementById('mensaje-resultado');
+    msg.className = 'mensaje';
+
+    if (!nombre || !telefono) {
+      msg.className = 'mensaje error';
+      msg.textContent = 'Por favor completa tu nombre y número de WhatsApp.';
+      return;
+    }
+    if (!estado.horaInicio) {
+      msg.className = 'mensaje error';
+      msg.textContent = 'Por favor selecciona un horario.';
+      return;
+    }
+
+    const btn = document.getElementById('btn-agendar');
+    btn.disabled = true;
+    btn.textContent = 'Agendando...';
+
+    try {
+      // 1. Crear o buscar cliente
+      const clienteRes = await fetch(`${SUPABASE_URL}/rest/v1/cliente`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify({ nombre, telefono, canal_preferido: 'whatsapp' })
+      });
+      const [cliente] = await clienteRes.json();
+
+      // 2. Crear la cita
+      const inicio = `${estado.fecha}T${estado.horaInicio}:00-05:00`;
+      const fin    = `${estado.fecha}T${estado.horaFin}:00-05:00`;
+
+      const citaRes = await fetch(`${SUPABASE_URL}/rest/v1/cita`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify({
+          barbero_id: estado.barberoId,
+          servicio_id: estado.servicioId,
+          cliente_id: cliente.id,
+          inicio,
+          fin,
+          estado: 'confirmada'
+        })
+      });
+
+      if (citaRes.ok) {
+        msg.className = 'mensaje exito';
+        msg.textContent = '✅ ¡Cita agendada! Recibirás un WhatsApp de confirmación en unos segundos.';
+        btn.textContent = 'Cita agendada';
+      } else {
+        const err = await citaRes.json();
+        if (err.code === '23P01') {
+          msg.className = 'mensaje error';
+          msg.textContent = 'Ese horario ya fue tomado. Por favor elige otro.';
+        } else {
+          msg.className = 'mensaje error';
+          msg.textContent = 'Ocurrió un error. Intenta de nuevo.';
+        }
+        btn.disabled = false;
+        btn.textContent = 'Agendar cita por WhatsApp';
+      }
+    } catch(e) {
+      msg.className = 'mensaje error';
+      msg.textContent = 'Error de conexión. Verifica tu internet e intenta de nuevo.';
+      btn.disabled = false;
+      btn.textContent = 'Agendar cita por WhatsApp';
+    }
+  }
+
+  // Iniciar
+  cargarServicios();
+  cargarBarberos();
+</script>
+</body>
+</html>
