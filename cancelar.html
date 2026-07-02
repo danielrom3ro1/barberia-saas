@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cancelar cita — Barber Kings</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f0f0f;
+      color: #f0f0f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      text-align: center;
+    }
+    h1 { color: #c9a84c; margin-bottom: 16px; }
+    .card {
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 32px;
+      max-width: 420px;
+      width: 100%;
+    }
+    p { color: #aaa; line-height: 1.6; margin-bottom: 24px; }
+    .btn {
+      padding: 14px 28px;
+      background: #d9534f;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn:disabled { background: #444; cursor: not-allowed; }
+    .mensaje { margin-top: 20px; padding: 14px; border-radius: 8px; display: none; }
+    .exito { background: #0d2b1a; color: #4caf7d; display: block; }
+    .error { background: #2b0d0d; color: #f44; display: block; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>✂️ Barber Kings</h1>
+    <p id="texto">¿Estás seguro de que deseas cancelar tu cita?<br>Esta acción no se puede deshacer.</p>
+    <button class="btn" id="btn-cancelar" onclick="cancelar()">Sí, cancelar mi cita</button>
+    <div class="mensaje" id="mensaje"></div>
+  </div>
+
+<script>
+  const SUPABASE_URL = 'https://hkcpfkjljgbbdrtwsjbr.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrY3Bma2psamdiYmRydHdzamJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NTQ3MTUsImV4cCI6MjA5ODQzMDcxNX0.0KWTzJ__5A7w1rFu7CoUdjdapGgpGs9dVLc6ZZsLLj4';
+
+  // Leer el token de la URL: cancelar.html?token=abc123
+  const token = new URLSearchParams(window.location.search).get('token');
+
+  if (!token) {
+    document.getElementById('texto').textContent = 'Link inválido: falta el token de cancelación.';
+    document.getElementById('btn-cancelar').style.display = 'none';
+  }
+
+  async function cancelar() {
+    const btn = document.getElementById('btn-cancelar');
+    const msg = document.getElementById('mensaje');
+    btn.disabled = true;
+    btn.textContent = 'Cancelando...';
+
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/functions/v1/cancelar-cita?token=${encodeURIComponent(token)}`,
+        {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${SUPABASE_KEY}` }
+        }
+      );
+      const data = await res.json();
+
+      if (res.ok) {
+        msg.className = 'mensaje exito';
+        msg.textContent = '✅ Tu cita fue cancelada exitosamente.';
+        btn.style.display = 'none';
+        document.getElementById('texto').style.display = 'none';
+      } else {
+        msg.className = 'mensaje error';
+        msg.textContent = data.error || 'No se pudo cancelar la cita.';
+        btn.disabled = false;
+        btn.textContent = 'Sí, cancelar mi cita';
+      }
+    } catch (e) {
+      msg.className = 'mensaje error';
+      msg.textContent = 'Error de conexión. Intenta de nuevo.';
+      btn.disabled = false;
+      btn.textContent = 'Sí, cancelar mi cita';
+    }
+  }
+</script>
+</body>
+</html>
