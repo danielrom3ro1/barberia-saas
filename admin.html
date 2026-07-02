@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Panel Admin — Barber Kings</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f0f0f;
+      color: #f0f0f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px;
+    }
+    h1 { font-size: 1.6rem; color: #c9a84c; margin-bottom: 24px; }
+    .card {
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 28px;
+      width: 100%;
+      max-width: 640px;
+      margin-bottom: 16px;
+    }
+    .card h2 { font-size: 0.95rem; color: #c9a84c; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+    label { display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 4px; margin-top: 12px; }
+    input, select {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #111;
+      color: #f0f0f0;
+      font-size: 0.95rem;
+    }
+    input:focus { outline: none; border-color: #c9a84c; }
+    .btn {
+      width: 100%;
+      padding: 13px;
+      background: #c9a84c;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 16px;
+    }
+    .btn:hover { background: #e0bc6a; }
+    .btn-sec { background: transparent; color: #c9a84c; border: 1px solid #c9a84c; }
+    .cita {
+      border: 1px solid #2a2a2a;
+      border-left: 4px solid #c9a84c;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+    .cita.cancelada { border-left-color: #d9534f; opacity: 0.5; }
+    .item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #2a2a2a;
+      padding: 10px 0;
+      font-size: 0.92rem;
+    }
+    .item:last-child { border-bottom: none; }
+    .item .sub { color: #888; font-size: 0.8rem; }
+    .metrica {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px;
+      background: #111;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .metrica .valor { color: #c9a84c; font-weight: 700; }
+    .mensaje { text-align: center; padding: 12px; border-radius: 8px; margin-top: 12px; display: none; }
+    .mensaje.exito { background: #0d2b1a; color: #4caf7d; display: block; }
+    .mensaje.error { background: #2b0d0d; color: #f44; display: block; }
+    .vacio { color: #666; text-align: center; padding: 16px; }
+    #vista-panel { display: none; width: 100%; max-width: 640px; }
+    .fila { display: flex; gap: 10px; }
+    .fila > div { flex: 1; }
+    .header-panel {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 640px;
+      margin-bottom: 16px;
+    }
+    .btn-salir {
+      background: transparent;
+      border: 1px solid #444;
+      color: #888;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+<h1>👑 Panel de Administración</h1>
+
+<!-- LOGIN -->
+<div class="card" id="vista-login">
+  <h2>Iniciar sesión</h2>
+  <label>Email</label>
+  <input type="email" id="input-email" placeholder="admin@email.com" />
+  <label>Contraseña</label>
+  <input type="password" id="input-password" placeholder="••••••••" />
+  <button class="btn" onclick="iniciarSesion()">Entrar</button>
+  <div class="mensaje" id="msg-login"></div>
+</div>
+
+<!-- PANEL -->
+<div id="vista-panel">
+  <div class="header-panel">
+    <span style="color:#c9a84c; font-weight:600;">👑 Administrador</span>
+    <button class="btn-salir" onclick="cerrarSesion()">Cerrar sesión</button>
+  </div>
+
+  <!-- MÉTRICAS -->
+  <div class="card">
+    <h2>📊 Métricas del período</h2>
+    <div class="fila">
+      <div>
+        <label>Desde</label>
+        <input type="date" id="met-desde" onchange="cargarMetricas()" />
+      </div>
+      <div>
+        <label>Hasta</label>
+        <input type="date" id="met-hasta" onchange="cargarMetricas()" />
+      </div>
+    </div>
+    <div id="lista-metricas" style="margin-top:16px;"></div>
+  </div>
+
+  <!-- CITAS -->
+  <div class="card">
+    <h2>📅 Todas las citas</h2>
+    <label>Fecha</label>
+    <input type="date" id="filtro-fecha" onchange="cargarCitas()" />
+    <div id="lista-citas" style="margin-top:16px;"></div>
+  </div>
+
+  <!-- SERVICIOS -->
+  <div class="card">
+    <h2>✂️ Servicios</h2>
+    <div id="lista-servicios"></div>
+    <label>Nombre del nuevo servicio</label>
+    <input type="text" id="serv-nombre" placeholder="Ej: Corte + cejas" />
+    <div class="fila">
+      <div>
+        <label>Duración (min)</label>
+        <input type="number" id="serv-duracion" placeholder="30" />
+      </div>
+      <div>
+        <label>Precio (COP)</label>
+        <input type="number" id="serv-precio" placeholder="25000" />
+      </div>
+    </div>
+    <button class="btn btn-sec" onclick="crearServicio()">Agregar servicio</button>
+    <div class="mensaje" id="msg-servicio"></div>
+  </div>
+
+  <!-- BARBEROS -->
+  <div class="card">
+    <h2>💈 Barberos</h2>
+    <div id="lista-barberos"></div>
+    <label>Nombre del nuevo barbero</label>
+    <input type="text" id="barb-nombre" placeholder="Ej: Pedro Gómez" />
+    <div class="fila">
+      <div>
+        <label>WhatsApp</label>
+        <input type="tel" id="barb-telefono" placeholder="+573001234567" />
+      </div>
+      <div>
+        <label>Comisión (%)</label>
+        <input type="number" id="barb-comision" placeholder="40" />
+      </div>
+    </div>
+    <button class="btn btn-sec" onclick="crearBarbero()">Agregar barbero</button>
+    <div class="mensaje" id="msg-barbero"></div>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://hkcpfkjljgbbdrtwsjbr.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrY3Bma2psamdiYmRydHdzamJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NTQ3MTUsImV4cCI6MjA5ODQzMDcxNX0.0KWTzJ__5A7w1rFu7CoUdjdapGgpGs9dVLc6ZZsLLj4';
+  const BARBERIA_ID = 'f8566d72-7b42-4b79-ae2f-aeb4168d3ef3';
+
+  let accessToken = null;
+
+  async function iniciarSesion() {
+    const email = document.getElementById('input-email').value.trim();
+    const password = document.getElementById('input-password').value;
+    const msg = document.getElementById('msg-login');
+    msg.className = 'mensaje';
+
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      msg.className = 'mensaje error';
+      msg.textContent = 'Email o contraseña incorrectos.';
+      return;
+    }
+    accessToken = data.access_token;
+
+    // Verificar que sea admin
+    const perfil = await consultar('perfiles', 'select=rol');
+    if (!perfil.length || perfil[0].rol !== 'admin') {
+      msg.className = 'mensaje error';
+      msg.textContent = 'Este usuario no es administrador.';
+      accessToken = null;
+      return;
+    }
+
+    document.getElementById('vista-login').style.display = 'none';
+    document.getElementById('vista-panel').style.display = 'block';
+
+    // Fechas por defecto: mes actual
+    const hoy = new Date();
+    const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().split('T')[0];
+    const hoyStr = hoy.toISOString().split('T')[0];
+    document.getElementById('met-desde').value = inicioMes;
+    document.getElementById('met-hasta').value = hoyStr;
+    document.getElementById('filtro-fecha').value = hoyStr;
+
+    cargarMetricas();
+    cargarCitas();
+    cargarServicios();
+    cargarBarberos();
+  }
+
+  function cerrarSesion() {
+    accessToken = null;
+    document.getElementById('vista-panel').style.display = 'none';
+    document.getElementById('vista-login').style.display = 'block';
+  }
+
+  async function consultar(tabla, params) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${tabla}?${params}`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${accessToken}` }
+    });
+    return res.json();
+  }
+
+  async function insertar(tabla, body) {
+    return fetch(`${SUPABASE_URL}/rest/v1/${tabla}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+  }
+
+  // ── MÉTRICAS ──
+  async function cargarMetricas() {
+    const desde = document.getElementById('met-desde').value;
+    const hasta = document.getElementById('met-hasta').value;
+    if (!desde || !hasta) return;
+
+    const citas = await consultar('cita',
+      `inicio=gte.${desde}T00:00:00-05:00` +
+      `&inicio=lte.${hasta}T23:59:59-05:00` +
+      `&estado=neq.cancelada` +
+      `&select=barbero_id,barbero(nombre,comision_pct),servicio(precio)`
+    );
+
+    const cont = document.getElementById('lista-metricas');
+    cont.innerHTML = '';
+
+    if (!Array.isArray(citas) || !citas.length) {
+      cont.innerHTML = '<div class="vacio">Sin citas en este período.</div>';
+      return;
+    }
+
+    // Agrupar por barbero
+    const porBarbero = {};
+    let totalGeneral = 0;
+    citas.forEach(c => {
+      const nombre = c.barbero?.nombre || 'Desconocido';
+      const precio = Number(c.servicio?.precio || 0);
+      if (!porBarbero[nombre]) porBarbero[nombre] = { citas: 0, ingresos: 0, comision: c.barbero?.comision_pct || 0 };
+      porBarbero[nombre].citas++;
+      porBarbero[nombre].ingresos += precio;
+      totalGeneral += precio;
+    });
+
+    Object.entries(porBarbero).forEach(([nombre, m]) => {
+      const div = document.createElement('div');
+      div.className = 'metrica';
+      div.innerHTML = `
+        <div>💈 ${nombre}<div class="sub" style="color:#888;font-size:0.8rem">${m.citas} citas · comisión ${m.comision}%</div></div>
+        <div class="valor">$${m.ingresos.toLocaleString('es-CO')}</div>
+      `;
+      cont.appendChild(div);
+    });
+
+    const total = document.createElement('div');
+    total.className = 'metrica';
+    total.style.borderTop = '2px solid #c9a84c';
+    total.innerHTML = `<div><b>TOTAL</b></div><div class="valor">$${totalGeneral.toLocaleString('es-CO')} COP</div>`;
+    cont.appendChild(total);
+  }
+
+  // ── CITAS ──
+  async function cargarCitas() {
+    const fecha = document.getElementById('filtro-fecha').value;
+    const citas = await consultar('cita',
+      `inicio=gte.${fecha}T00:00:00-05:00` +
+      `&inicio=lte.${fecha}T23:59:59-05:00` +
+      `&order=inicio.asc` +
+      `&select=inicio,estado,barbero(nombre),cliente(nombre,telefono),servicio(nombre)`
+    );
+
+    const cont = document.getElementById('lista-citas');
+    cont.innerHTML = '';
+
+    if (!Array.isArray(citas) || !citas.length) {
+      cont.innerHTML = '<div class="vacio">No hay citas para esta fecha.</div>';
+      return;
+    }
+
+    citas.forEach(c => {
+      const hora = new Date(c.inicio).toLocaleTimeString('es-CO', {
+        timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit'
+      });
+      const div = document.createElement('div');
+      div.className = 'cita' + (c.estado === 'cancelada' ? ' cancelada' : '');
+      div.innerHTML = `
+        <b style="color:#c9a84c">${hora}</b> — 💈 ${c.barbero?.nombre || ''}<br>
+        👤 ${c.cliente?.nombre || ''} · ✂️ ${c.servicio?.nombre || ''} · <small>${c.estado}</small>
+      `;
+      cont.appendChild(div);
+    });
+  }
+
+  // ── SERVI
