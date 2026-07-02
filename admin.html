@@ -352,4 +352,97 @@
     });
   }
 
-  // ── SERVI
+  // ── SERVICIOS ──
+  async function cargarServicios() {
+    const servicios = await consultar('servicio', `barberia_id=eq.${BARBERIA_ID}&activo=eq.true&select=id,nombre,duracion_min,precio&order=nombre.asc`);
+    const cont = document.getElementById('lista-servicios');
+    cont.innerHTML = '';
+    servicios.forEach(s => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <div>${s.nombre}<div class="sub">${s.duracion_min} min</div></div>
+        <div style="color:#c9a84c">$${Number(s.precio).toLocaleString('es-CO')}</div>
+      `;
+      cont.appendChild(div);
+    });
+  }
+
+  async function crearServicio() {
+    const nombre = document.getElementById('serv-nombre').value.trim();
+    const duracion = parseInt(document.getElementById('serv-duracion').value);
+    const precio = parseFloat(document.getElementById('serv-precio').value);
+    const msg = document.getElementById('msg-servicio');
+    msg.className = 'mensaje';
+
+    if (!nombre || !duracion || !precio) {
+      msg.className = 'mensaje error';
+      msg.textContent = 'Completa todos los campos.';
+      return;
+    }
+
+    const res = await insertar('servicio', {
+      barberia_id: BARBERIA_ID, nombre, duracion_min: duracion, precio
+    });
+
+    if (res.ok) {
+      msg.className = 'mensaje exito';
+      msg.textContent = '✅ Servicio agregado.';
+      document.getElementById('serv-nombre').value = '';
+      document.getElementById('serv-duracion').value = '';
+      document.getElementById('serv-precio').value = '';
+      cargarServicios();
+    } else {
+      msg.className = 'mensaje error';
+      msg.textContent = 'No se pudo crear el servicio.';
+    }
+  }
+
+  // ── BARBEROS ──
+  async function cargarBarberos() {
+    const barberos = await consultar('barbero', `barberia_id=eq.${BARBERIA_ID}&activo=eq.true&select=id,nombre,telefono,comision_pct&order=nombre.asc`);
+    const cont = document.getElementById('lista-barberos');
+    cont.innerHTML = '';
+    barberos.forEach(b => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <div>💈 ${b.nombre}<div class="sub">${b.telefono || 'sin teléfono'}</div></div>
+        <div style="color:#c9a84c">${b.comision_pct || 0}%</div>
+      `;
+      cont.appendChild(div);
+    });
+  }
+
+  async function crearBarbero() {
+    const nombre = document.getElementById('barb-nombre').value.trim();
+    const telefono = document.getElementById('barb-telefono').value.trim();
+    const comision = parseFloat(document.getElementById('barb-comision').value);
+    const msg = document.getElementById('msg-barbero');
+    msg.className = 'mensaje';
+
+    if (!nombre) {
+      msg.className = 'mensaje error';
+      msg.textContent = 'El nombre es obligatorio.';
+      return;
+    }
+
+    const res = await insertar('barbero', {
+      barberia_id: BARBERIA_ID, nombre, telefono, comision_pct: comision || 0
+    });
+
+    if (res.ok) {
+      msg.className = 'mensaje exito';
+      msg.textContent = '✅ Barbero agregado.';
+      document.getElementById('barb-nombre').value = '';
+      document.getElementById('barb-telefono').value = '';
+      document.getElementById('barb-comision').value = '';
+      cargarBarberos();
+    } else {
+      msg.className = 'mensaje error';
+      msg.textContent = 'No se pudo crear el barbero.';
+    }
+  }
+</script>
+</body>
+</html>
