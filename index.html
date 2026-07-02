@@ -138,7 +138,7 @@
   <label>Nombre completo</label>
   <input type="text" id="input-nombre" placeholder="Ej: Juan Pérez" />
   <label>Número de WhatsApp</label>
-  <input type="tel" id="input-telefono" placeholder="+573001234567" />
+  <input type="tel" id="input-telefono" placeholder="3001234567" />
 </div>
 
 <!-- PASO 5: Confirmar -->
@@ -151,12 +151,11 @@
 
 <script>
   // ══════════════════════════════════════════
-  // CONFIGURACIÓN — reemplaza con tus valores
+  // CONFIGURACIÓN
   // ══════════════════════════════════════════
   const SUPABASE_URL  = 'https://hkcpfkjljgbbdrtwsjbr.supabase.co';
   const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrY3Bma2psamdiYmRydHdzamJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NTQ3MTUsImV4cCI6MjA5ODQzMDcxNX0.0KWTzJ__5A7w1rFu7CoUdjdapGgpGs9dVLc6ZZsLLj4';
   const BARBERIA_ID   = 'f8566d72-7b42-4b79-ae2f-aeb4168d3ef3';
-  const DOMINIO_CANCEL = 'https://danielrom3ro1.github.io/barberia-saas';
 
   // Estado de la sesión de booking
   const estado = {
@@ -165,7 +164,7 @@
     fecha: null, horaInicio: null, horaFin: null
   };
 
-  // Función base para llamar a Supabase
+  // Función base para consultar Supabase
   async function supabase(tabla, params = '') {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/${tabla}?${params}`, {
       headers: {
@@ -228,6 +227,8 @@
       const hoy = new Date().toISOString().split('T')[0];
       document.getElementById('input-fecha').min = hoy;
       document.getElementById('input-fecha').onchange = cargarSlots;
+      // Si ya había fecha elegida, recargar slots con el nuevo servicio/barbero
+      if (document.getElementById('input-fecha').value) cargarSlots();
     }
   }
 
@@ -260,7 +261,10 @@
       return;
     }
 
-    // Generar slots cada X minutos según duración del servicio
+    // Asegurar que citasExistentes sea un array (si RLS bloquea, viene un objeto de error)
+    const citas = Array.isArray(citasExistentes) ? citasExistentes : [];
+
+    // Generar slots según duración del servicio
     disponibilidad.forEach(bloque => {
       let [hIni, mIni] = bloque.hora_inicio.split(':').map(Number);
       const [hFin, mFin] = bloque.hora_fin.split(':').map(Number);
@@ -271,8 +275,8 @@
         const finSlot = hIni * 60 + mIni + estado.servicioDuracion;
         const slotFin = `${String(Math.floor(finSlot/60)).padStart(2,'0')}:${String(finSlot%60).padStart(2,'0')}`;
 
-        // Verificar si el slot está ocupado
-        const ocupado = citasExistentes.some(c => {
+        // Verificar si el slot está ocupado por una cita existente
+        const ocupado = citas.some(c => {
           const cIni = new Date(c.inicio).toTimeString().slice(0,5);
           const cFin = new Date(c.fin).toTimeString().slice(0,5);
           return slotIni < cFin && slotFin > cIni;
@@ -313,14 +317,24 @@
     `;
   }
 
+  // ── Normalizar teléfono colombiano ──
+  // Acepta: 3001234567, 573001234567, +573001234567 → devuelve +573001234567
+  function normalizarTelefono(tel) {
+    let limpio = tel.replace(/[\s\-\(\)]/g, ''); // quitar espacios, guiones, paréntesis
+    if (limpio.startsWith('+57')) return limpio;
+    if (limpio.startsWith('57') && limpio.length === 12) return '+' + limpio;
+    if (limpio.length === 10 && limpio.startsWith('3')) return '+57' + limpio;
+    return limpio; // si no coincide con nada, se envía tal cual
+  }
+
   // ── Agendar la cita ──
   async function agendarCita() {
     const nombre = document.getElementById('input-nombre').value.trim();
-    const telefono = document.getElementById('input-telefono').value.trim();
+    const telefonoRaw = document.getElementById('input-telefono').value.trim();
     const msg = document.getElementById('mensaje-resultado');
     msg.className = 'mensaje';
 
-    if (!nombre || !telefono) {
+    if (!nombre || !telefonoRaw) {
       msg.className = 'mensaje error';
       msg.textContent = 'Por favor completa tu nombre y número de WhatsApp.';
       return;
@@ -331,25 +345,33 @@
       return;
     }
 
+    const telefono = normalizarTelefono(telefonoRaw);
+
     const btn = document.getElementById('btn-agendar');
     btn.disabled = true;
     btn.textContent = 'Agendando...';
 
     try {
-      // 1. Crear o buscar cliente
+      // 1. Generar el ID del cliente desde el navegador.
+      // Así no necesitamos que Supabase nos devuelva la fila creada
+      // (la política RLS solo permite INSERT al público, no SELECT).
+      const clienteId = crypto.randomUUID();
+
       const clienteRes = await fetch(`${SUPABASE_URL}/rest/v1/cliente`, {
         method: 'POST',
         headers: {
           'apikey': SUPABASE_KEY,
           'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=representation'
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ nombre, telefono, canal_preferido: 'whatsapp' })
+        body: JSON.stringify({ id: clienteId, nombre, telefono, canal_preferido: 'whatsapp' })
       });
-      const [cliente] = await clienteRes.json();
 
-      // 2. Crear la cita
+      if (!clienteRes.ok) {
+        throw new Error('No se pudo registrar el cliente');
+      }
+
+      // 2. Crear la cita con ese ID (hora Colombia = UTC-5)
       const inicio = `${estado.fecha}T${estado.horaInicio}:00-05:00`;
       const fin    = `${estado.fecha}T${estado.horaFin}:00-05:00`;
 
@@ -358,13 +380,12 @@
         headers: {
           'apikey': SUPABASE_KEY,
           'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=representation'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           barbero_id: estado.barberoId,
           servicio_id: estado.servicioId,
-          cliente_id: cliente.id,
+          cliente_id: clienteId,
           inicio,
           fin,
           estado: 'confirmada'
