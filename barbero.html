@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mi agenda — Barber Kings</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f0f0f;
+      color: #f0f0f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px;
+    }
+    h1 { font-size: 1.6rem; color: #c9a84c; margin-bottom: 24px; }
+    .card {
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 28px;
+      width: 100%;
+      max-width: 520px;
+      margin-bottom: 16px;
+    }
+    .card h2 { font-size: 0.95rem; color: #c9a84c; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+    label { display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 4px; margin-top: 12px; }
+    input, select {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #111;
+      color: #f0f0f0;
+      font-size: 0.95rem;
+    }
+    input:focus { outline: none; border-color: #c9a84c; }
+    .btn {
+      width: 100%;
+      padding: 13px;
+      background: #c9a84c;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 16px;
+    }
+    .btn:hover { background: #e0bc6a; }
+    .btn-sec {
+      background: transparent;
+      color: #c9a84c;
+      border: 1px solid #c9a84c;
+    }
+    .cita {
+      border: 1px solid #2a2a2a;
+      border-left: 4px solid #c9a84c;
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+    .cita .hora { font-size: 1.1rem; font-weight: 700; color: #c9a84c; }
+    .cita .info { font-size: 0.9rem; color: #ccc; margin-top: 4px; line-height: 1.5; }
+    .cita.cancelada { border-left-color: #d9534f; opacity: 0.5; }
+    .cita .estado { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #888; }
+    .mensaje { text-align: center; padding: 12px; border-radius: 8px; margin-top: 12px; display: none; }
+    .mensaje.exito { background: #0d2b1a; color: #4caf7d; display: block; }
+    .mensaje.error { background: #2b0d0d; color: #f44; display: block; }
+    .vacio { color: #666; text-align: center; padding: 20px; }
+    #vista-agenda { display: none; width: 100%; max-width: 520px; }
+    .fila { display: flex; gap: 10px; }
+    .fila > div { flex: 1; }
+    .header-agenda {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 520px;
+      margin-bottom: 16px;
+    }
+    .btn-salir {
+      background: transparent;
+      border: 1px solid #444;
+      color: #888;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+<h1>💈 Mi Agenda</h1>
+
+<!-- LOGIN -->
+<div class="card" id="vista-login">
+  <h2>Iniciar sesión</h2>
+  <label>Email</label>
+  <input type="email" id="input-email" placeholder="tu@email.com" />
+  <label>Contraseña</label>
+  <input type="password" id="input-password" placeholder="••••••••" />
+  <button class="btn" onclick="iniciarSesion()">Entrar</button>
+  <div class="mensaje" id="msg-login"></div>
+</div>
+
+<!-- AGENDA -->
+<div id="vista-agenda">
+  <div class="header-agenda">
+    <span id="nombre-barbero" style="color:#c9a84c; font-weight:600;"></span>
+    <button class="btn-salir" onclick="cerrarSesion()">Cerrar sesión</button>
+  </div>
+
+  <div class="card">
+    <h2>Citas — <span id="titulo-fecha"></span></h2>
+    <label>Ver fecha</label>
+    <input type="date" id="filtro-fecha" onchange="cargarCitas()" />
+    <div id="lista-citas" style="margin-top:16px;"></div>
+  </div>
+
+  <div class="card">
+    <h2>Bloquear horario</h2>
+    <p style="color:#888; font-size:0.85rem; margin-bottom:8px;">
+      Marca un descanso o bloquea horas en las que no atenderás.
+    </p>
+    <label>Fecha</label>
+    <input type="date" id="bloq-fecha" />
+    <div class="fila">
+      <div>
+        <label>Desde</label>
+        <input type="time" id="bloq-inicio" />
+      </div>
+      <div>
+        <label>Hasta</label>
+        <input type="time" id="bloq-fin" />
+      </div>
+    </div>
+    <label>Tipo</label>
+    <select id="bloq-tipo">
+      <option value="descanso">Descanso</option>
+      <option value="bloqueo_manual">Bloqueo manual</option>
+    </select>
+    <button class="btn btn-sec" onclick="bloquearHorario()">Bloquear</button>
+    <div class="mensaje" id="msg-bloqueo"></div>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://hkcpfkjljgbbdrtwsjbr.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrY3Bma2psamdiYmRydHdzamJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NTQ3MTUsImV4cCI6MjA5ODQzMDcxNX0.0KWTzJ__5A7w1rFu7CoUdjdapGgpGs9dVLc6ZZsLLj4';
+
+  // Sesión del barbero
+  let accessToken = null;
+  let barberoId = null;
+
+  // ── Login con Supabase Auth ──
+  async function iniciarSesion() {
+    const email = document.getElementById('input-email').value.trim();
+    const password = document.getElementById('input-password').value;
+    const msg = document.getElementById('msg-login');
+    msg.className = 'mensaje';
+
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      msg.className = 'mensaje error';
+      msg.textContent = 'Email o contraseña incorrectos.';
+      return;
+    }
+
+    accessToken = data.access_token;
+
+    // Obtener el perfil del barbero (su barbero_id)
+    const perfil = await consultar('perfiles', 'select=barbero_id,rol');
+    if (!perfil.length || !perfil[0].barbero_id) {
+      msg.className = 'mensaje error';
+      msg.textContent = 'Este usuario no tiene perfil de barbero.';
+      return;
+    }
+    barberoId = perfil[0].barbero_id;
+
+    // Obtener el nombre del barbero
+    const barbero = await consultar('barbero', `id=eq.${barberoId}&select=nombre`);
+    document.getElementById('nombre-barbero').textContent = '💈 ' + (barbero[0]?.nombre || 'Barbero');
+
+    // Mostrar agenda
+    document.getElementById('vista-login').style.display = 'none';
+    document.getElementById('vista-agenda').style.display = 'block';
+
+    // Fecha de hoy por defecto
+    const hoy = new Date().toISOString().split('T')[0];
+    document.getElementById('filtro-fecha').value = hoy;
+    document.getElementById('bloq-fecha').min = hoy;
+    cargarCitas();
+  }
+
+  function cerrarSesion() {
+    accessToken = null;
+    barberoId = null;
+    document.getElementById('vista-agenda').style.display = 'none';
+    document.getElementById('vista-login').style.display = 'block';
+  }
+
+  // Función auxiliar para consultar Supabase con la sesión del barbero
+  async function consultar(tabla, params) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${tabla}?${params}`, {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${accessToken}`
+      }
+    });
+    return res.json();
+  }
+
+  // ── Cargar citas del día seleccionado ──
+  async function cargarCitas() {
+    const fecha = document.getElementById('filtro-fecha').value;
+    document.getElementById('titulo-fecha').textContent = fecha;
+
+    const citas = await consultar('cita',
+      `barbero_id=eq.${barberoId}` +
+      `&inicio=gte.${fecha}T00:00:00-05:00` +
+      `&inicio=lte.${fecha}T23:59:59-05:00` +
+      `&order=inicio.asc` +
+      `&select=id,inicio,fin,estado,cliente(nombre,telefono),servicio(nombre,duracion_min)`
+    );
+
+    const cont = document.getElementById('lista-citas');
+    cont.innerHTML = '';
+
+    if (!Array.isArray(citas) || !citas.length) {
+      cont.innerHTML = '<div class="vacio">No tienes citas para esta fecha.</div>';
+      return;
+    }
+
+    citas.forEach(c => {
+      const hora = new Date(c.inicio).toLocaleTimeString('es-CO', {
+        timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit'
+      });
+      const div = document.createElement('div');
+      div.className = 'cita' + (c.estado === 'cancelada' ? ' cancelada' : '');
+      div.innerHTML = `
+        <div class="hora">🕐 ${hora}</div>
+        <div class="info">
+          👤 ${c.cliente?.nombre || 'Cliente'} — 📱 ${c.cliente?.telefono || ''}<br>
+          ✂️ ${c.servicio?.nombre || ''} (${c.servicio?.duracion_min || ''} min)
+        </div>
+        <div class="estado">${c.estado}</div>
+      `;
+      cont.appendChild(div);
+    });
+  }
+
+  // ── Bloquear horario ──
+  async function bloquearHorario() {
+    const fecha = document.getElementById('bloq-fecha').value;
+    const inicio = document.getElementById('bloq-inicio').value;
+    const fin = document.getElementById('bloq-fin').value;
+    const tipo = document.getElementById('bloq-tipo').value;
+    const msg = document.getElementById('msg-bloqueo');
+    msg.className = 'mensaje';
+
+    if (!fecha || !inicio || !fin) {
+      msg.className = 'mensaje error';
+      msg.textContent = 'Completa fecha, hora de inicio y fin.';
+      return;
+    }
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/disponibilidad`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        barbero_id: barberoId,
+        fecha,
+        hora_inicio: inicio,
+        hora_fin: fin,
+        tipo
+      })
+    });
+
+    if (res.ok) {
+      msg.className = 'mensaje exito';
+      msg.textContent = '✅ Horario bloqueado correctamente.';
+    } else {
+      msg.className = 'mensaje error';
+      msg.textContent = 'No se pudo bloquear el horario.';
+    }
+  }
+</script>
+</body>
+</html>
