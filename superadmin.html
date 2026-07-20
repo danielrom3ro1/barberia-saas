@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Super Admin — BartSolutions</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f6f8;
+      color: #1a1a2e;
+      min-height: 100vh;
+      font-size: 17px;
+    }
+    .top {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 18px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .top h1 { font-size: 1.3rem; color: #e0bc6a; }
+    .contenedor { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    .tab {
+      padding: 12px 22px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      background: #fff;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #555;
+    }
+    .tab.activa { background: #1a1a2e; color: #e0bc6a; border-color: #1a1a2e; }
+    .panel { display: none; }
+    .panel.activa { display: block; }
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 26px;
+      margin-bottom: 18px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+    .card h2 { font-size: 1.15rem; margin-bottom: 18px; color: #1a1a2e; }
+    label { display: block; font-size: 0.95rem; color: #555; margin: 14px 0 5px; font-weight: 600; }
+    input, select {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      background: #fff;
+      color: #1a1a2e;
+    }
+    input:focus, select:focus { outline: none; border-color: #c9a84c; }
+    .btn {
+      padding: 13px 24px;
+      background: #1a1a2e;
+      color: #e0bc6a;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 18px;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn-peq {
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      margin: 0;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-editar { background: #eef2ff; color: #3b4bd8; }
+    .btn-borrar { background: #ffecec; color: #d9534f; margin-left: 6px; }
+    .item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid #eee;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .item:last-child { border-bottom: none; }
+    .item .sub { color: #888; font-size: 0.85rem; margin-top: 2px; }
+    .fila { display: flex; gap: 12px; }
+    .fila > div { flex: 1; }
+    .mensaje { padding: 13px; border-radius: 10px; margin-top: 14px; display: none; text-align: center; }
+    .exito { background: #e6f7ee; color: #1a7f4e; display: block; }
+    .error { background: #fdecec; color: #c0392b; display: block; }
+    .vacio { color: #999; text-align: center; padding: 18px; }
+    .selector-barberia {
+      background: #fffbe8;
+      border: 1px solid #e0bc6a;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+    }
+    #vista-panel { display: none; }
+    .badge { font-size: 0.75rem; padding: 3px 10px; border-radius: 20px; font-weight: 700; }
+    .badge.on  { background: #e6f7ee; color: #1a7f4e; }
+    .badge.off { background: #fdecec; color: #c0392b; }
+    .login-caja { max-width: 420px; margin: 60px auto; }
+  </style>
+</head>
+<body>
+
+<div class="top">
+  <h1>⚙️ BartSolutions — Super Admin</h1>
+  <button class="btn-peq btn-borrar" id="btn-salir" style="display:none" onclick="cerrarSesion()">Salir</button>
+</div>
+
+<!-- LOGIN -->
+<div class="login-caja card" id="vista-login">
+  <h2>Iniciar sesión</h2>
+  <label>Email</label>
+  <input type="email" id="input-email" />
+  <label>Contraseña</label>
+  <input type="password" id="input-password" />
+  <button class="btn" onclick="iniciarSesion()">Entrar</button>
+  <div class="mensaje" id="msg-login"></div>
+</div>
+
+<!-- PANEL -->
+<div class="contenedor" id="vista-panel">
+
+  <div class="selector-barberia">
+    <label style="margin-top:0">🏪 Barbería de trabajo (aplica a Servicios, Barberos y Turnos)</label>
+    <select id="sel-barberia" onchange="cambiarBarberia()"></select>
+  </div>
+
+  <div class="tabs">
+    <button class="tab activa" onclick="verTab('barberias', this)">🏪 Barberías</button>
+    <button class="tab" onclick="verTab('servicios', this)">✂️ Servicios</button>
+    <button class="tab" onclick="verTab('barberos', this)">💈 Barberos</button>
+    <button class="tab" onclick="verTab('turnos', this)">📅 Turnos</button>
+  </div>
+
+  <!-- TAB BARBERÍAS -->
+  <div class="panel activa" id="panel-barberias">
+    <div class="card">
+      <h2>Mis barberías</h2>
+      <div id="lista-barberias"></div>
+    </div>
+    <div class="card">
+      <h2>Crear barbería nueva</h2>
+      <label>Nombre</label>
+      <input type="text" id="nb-nombre" placeholder="Ej: Barbería El Patrón" />
+      <label>Slug (para la URL, sin espacios ni tildes)</label>
+      <input type="text" id="nb-slug" placeholder="Ej: el-patron-medellin" />
+      <label>WhatsApp del dueño</label>
+      <input type="tel" id="nb-whatsapp" placeholder="+573001234567" />
+      <button class="btn" onclick="crearBarberia()">Crear barbería</button>
+      <div class="mensaje" id="msg-barberia"></div>
+    </div>
+  </div>
+
+  <!-- TAB SERVICIOS -->
+  <div class="panel" id="panel-servicios">
+    <div class="card">
+      <h2>Servicios de la barbería seleccionada</h2>
+      <div id="lista-servicios"></div>
+    </div>
+    <div class="card">
+      <h2 id="titulo-form-servicio">Agregar servicio</h2>
+      <input type="hidden" id="sv-id" />
+      <label>Nombre</label>
+      <input type="text" id="sv-nombre" />
+      <div class="fila">
+        <div><label>Duración (min)</label><input type="number" id="sv-duracion" /></div>
+        <div><label>Precio (COP)</label><input type="number" id="sv-precio" /></div>
+      </div>
+      <button class="btn" onclick="guardarServicio()">Guardar</button>
+      <div class="mensaje" id="msg-servicio"></div>
+    </div>
+  </div>
+
+  <!-- TAB BARBEROS -->
+  <div class="panel" id="panel-barberos">
+    <div class="card">
+      <h2>Barberos de la barbería seleccionada</h2>
+      <div id="lista-barberos"></div>
+    </div>
+    <div class="card">
+      <h2 id="titulo-form-barbero">Agregar barbero</h2>
+      <input type="hidden" id="bb-id" />
+      <label>Nombre</label>
+      <input type="text" id="bb-nombre" />
+      <div class="fila">
+        <div><label>WhatsApp</label><input type="tel" id="bb-telefono" placeholder="+57..." /></div>
+        <div><label>Comisión (%)</label><input type="number" id="bb-comision" /></div>
+      </div>
+      <button class="btn" onclick="guardarBarbero()">Guardar</button>
+      <div class="mensaje" id="msg-barbero"></div>
+    </div>
+  </div>
+
+  <!-- TAB TURNOS -->
+  <div class="panel" id="panel-turnos">
+    <div class="card">
+      <h2>Programar disponibilidad</h2>
+      <label>Barbero</label>
+      <select id="tn-barbero"></select>
+      <div class="fila">
+        <div><label>Desde (fecha)</label><input type="date" id="tn-desde" /></div>
+        <div><label>Hasta (fecha)</label><input type="date" id="tn-hasta" /></div>
+      </div>
+      <div class="fila">
+        <div><label>Hora inicio</label><input type="time" id="tn-hini" value="08:00" /></div>
+        <div><label>Hora fin</label><input type="time" id="tn-hfin" value="20:00" /></div>
+      </div>
+      <button class="btn" onclick="programarTurnos()">Crear turnos</button>
+      <div class="mensaje" id="msg-turnos"></div>
+    </div>
+    <div class="card">
+      <h2>Turnos próximos (7 días)</h2>
+      <div id="lista-turnos"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://hkcpfkjljgbbdrtwsjbr.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGci••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••';
+
+  let accessToken = null;
+  let barberiaActual = null;
+
+  // ─── Helpers ───
+  const $ = id => document.getElementById(id);
+
+  function headers(extra = {}) {
+    return {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+      ...extra
+    };
+  }
+
+  async function api(metodo, tabla, params = '', body = null) {
+    const opts = { method: metodo, headers: headers() };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${tabla}?${params}`, opts);
+    if (metodo === 'GET') return res.json();
+    return res;
+  }
+
+  function aviso(id, ok, texto) {
+    const el = $(id);
+    el.className = 'mensaje ' + (ok ? 'exito' : 'error');
+    el.textContent = texto;
+    setTimeout(() => { el.className = 'mensaje'; }, 4000);
+  }
+
+  // ─── Login ───
+  async function iniciarSesion() {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: $('input-email').value.trim(), password: $('input-password').value })
+    });
+    const data = await res.json();
+    if (!res.ok) return aviso('msg-login', false, 'Credenciales incorrectas.');
+
+    accessToken = data.access_token;
+    const perfil = await api('GET', 'perfiles', 'select=rol');
+    if (!perfil.length || perfil[0].rol !== 'superadmin') {
+      accessToken = null;
+      return aviso('msg-login', false, 'Este usuario no es superadmin.');
+    }
+
+    $('vista-login').style.display = 'none';
+    $('vista-panel').style.display = 'block';
+    $('btn-salir').style.display = 'inline-block';
+    cargarBarberias();
+  }
+
+  function cerrarSesion() {
+    accessToken = null;
+    $('vista-panel').style.display = 'none';
+    $('vista-login').style.display = 'block';
+    $('btn-salir').style.display = 'none';
+  }
+
+  function verTab(nombre, boton) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('activa'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('activa'));
+    boton.classList.add('activa');
+    $('panel-' + nombre).classList.add('activa');
+  }
+
+  // ─── Barberías ───
+  async function cargarBarberias() {
+    const barberias = await api('GET', 'barberia', 'select=id,nombre,slug,whatsapp_admin,activa&order=nombre.asc');
+    const cont = $('lista-barberias');
+    const sel = $('sel-barberia');
+    cont.innerHTML = '';
+    sel.innerHTML = '';
+
+    if (!barberias.length) {
+      cont.innerHTML = '<div class="vacio">Aún no tienes barberías.</div>';
+      return;
+    }
+
+    barberias.forEach(b => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <div>
+          <b>${b.nombre}</b> <span class="badge ${b.activa ? 'on' : 'off'}">${b.activa ? 'ACTIVA' : 'INACTIVA'}</span>
+          <div class="sub">/${b.slug} · ${b.whatsapp_admin || 'sin WhatsApp'}</div>
+        </div>
+        <div>
+          <button class="btn-peq ${b.activa ? 'btn-borrar' : 'btn-editar'}"
+            onclick="alternarBarberia('${b.id}', ${!b.activa})">
+            ${b.activa ? 'Desactivar' : 'Activar'}
+          </button>
+        </div>`;
+      cont.appendChild(div);
+
+      const opt = document.createElement('option');
+      opt.value = b.id;
+      opt.textContent = b.nombre;
+      sel.appendChild(opt);
+    });
+
+    if (!barberiaActual) barberiaActual = barberias[0].id;
+    sel.value = barberiaActual;
+    cargarServicios();
+    cargarBarberos();
+    cargarTurnos();
+  }
+
+  function cambiarBarberia() {
+    barberiaActual = $('sel-barberia').value;
+    cargarServicios();
+    cargarBarberos();
+    cargarTurnos();
+  }
+
+  async function crearBarberia() {
+    const nombre = $('nb-nombre').value.trim();
+    const slug = $('nb-slug').value.trim().toLowerCase();
+    const whatsapp = $('nb-whatsapp').value.trim();
+    if (!nombre || !slug) return aviso('msg-barberia', false, 'Nombre y slug son obligatorios.');
+
+    const res = await api('POST', 'barberia', '', { nombre, slug, whatsapp_admin: whatsapp });
+    if (res.ok) {
+      aviso('msg-barberia', true, '✅ Barbería creada.');
+      $('nb-nombre').value = ''; $('nb-slug').value = ''; $('nb-whatsapp').value = '';
+      cargarBarberias();
+    } else {
+      aviso('msg-barberia', false, 'Error — ¿el slug ya existe?');
+    }
+  }
+
+  async function alternarBarberia(id, activa) {
+    await api('PATCH', 'barberia', `id=eq.${id}`, { activa });
+    cargarBarberias();
+  }
+
+  // ─── Servicios ───
+  async function cargarServicios() {
+    const servicios = await api('GET', 'servicio', `barberia_id=eq.${barberiaActual}&activo=eq.true&select=id,nombre,duracion_min,precio&order=nombre.asc`);
+    const cont = $('lista-servicios');
+    cont.innerHTML = servicios.length ? '' : '<div class="vacio">Sin servicios.</div>';
+    servicios.forEach(s => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <div><b>${s.nombre}</b><div class="sub">${s.duracion_min} min · $${Number(s.precio).toLocaleString('es-CO')} COP</div></div>
+        <div>
+          <button class="btn-peq btn-editar" onclick='editarServicio(${JSON.stringify(s)})'>Editar</button>
+          <button class="btn-peq btn-borrar" onclick="borrarServicio('${s.id}')">Borrar</button>
+        </div>`;
+      cont.appendChild(div);
+    });
+  }
+
+  function editarServicio(s) {
+    $('sv-id').value = s.id;
+    $('sv-nombre').value = s.nombre;
+    $('sv-duracion').value = s.duracion_min;
+    $('sv-precio').value = s.precio;
+    $('titulo-form-servicio').textContent = 'Editar servicio: ' + s.nombre;
+  }
+
+  async function guardarServicio() {
+    const id = $('sv-id').value;
+    const body = {
+      nombre: $('sv-nombre').value.trim(),
+      duracion_min: parseInt($('sv-duracion').value),
+      precio: parseFloat($('sv-precio').value)
+    };
+    if (!body.nombre || !body.duracion_min || !body.precio)
+      return aviso('msg-servicio', false, 'Completa todos los campos.');
+
+    let res;
+    if (id) {
+      res = await api('PATCH', 'servicio', `id=eq.${id}`, body);
+    } else {
+      res = await api('POST', 'servicio', '', { ...body, barberia_id: barberiaActual });
+    }
+
+    if (res.ok) {
+      aviso('msg-servicio', true, '✅ Guardado.');
+      $('sv-id').value = ''; $('sv-nombre').value = ''; $('sv-duracion').value = ''; $('sv-precio').value = '';
+      $('titulo-form-servicio').textContent = 'Agregar servicio';
+      cargarServicios();
+    } else {
+      aviso('msg-servicio', false, 'No se pudo guardar.');
+    }
+  }
+
+  async function borrarServicio(id) {
+    if (!confirm('¿Borrar este servicio? Dejará de aparecer en la página de booking.')) return;
+    // Borrado suave: se desactiva en vez de eliminar, para no romper citas antiguas
+    await api('PATCH', 'servicio', `id=eq.${id}`, { activo: false });
+    cargarServicios();
+  }
+
+  // ─── Barberos ───
+  async function cargarBarberos() {
+    const barberos = await api('GET', 'barbero', `barberia_id=eq.${barberiaActual}&activo=eq.true&select=id,nombre,telefono,comision_pct&order=nombre.asc`);
+    const cont = $('lista-barberos');
+    const sel = $('tn-barbero');
+    cont.innerHTML = barberos.length ? '' : '<div class="vacio">Sin barberos.</div>';
+    sel.innerHTML = '';
+
+    barberos.forEach(b => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <div><b>💈 ${b.nombre}</b><div class="sub">${b.telefono || 'sin teléfono'} · comisión ${b.comision_pct || 0}%</div></div>
+        <div>
+          <button class="btn-peq btn-editar" onclick='editarBarbero(${JSON.stringify(b)})'>Editar</button>
+          <button class="btn-peq btn-borrar" onclick="borrarBarbero('${b.id}')">Borrar</button>
+        </div>`;
+      cont.appendChild(div);
+
+      const opt = document.createElement('option');
+      opt.value = b.id;
+      opt.textContent = b.nombre;
+      sel.appendChild(opt);
+    });
+  }
+
+  function editarBarbero(b) {
+    $('bb-id').value = b.id;
+    $('bb-nombre').value = b.nombre;
+    $('bb-telefono').value = b.telefono || '';
+    $('bb-comision').value = b.comision_pct || 0;
+    $('titulo-form-barbero').textContent = 'Editar barbero: ' + b.nombre;
+  }
+
+  async function guardarBarbero() {
+    const id = $('bb-id').value;
+    const body = {
+      nombre: $('bb-nombre').value.trim(),
+      telefono: $('bb-telefono').value.trim(),
+      comision_pct: parseFloat($('bb-comision').value) || 0
+    };
+    if (!body.nombre) return aviso('msg-barbero', false, 'El nombre es obligatorio.');
+
+    let res;
+    if (id) {
+      res = await api('PATCH', 'barbero', `id=eq.${id}`, body);
+    } else {
+      res = await api('POST', 'barbero', '', { ...body, barberia_id: barberiaActual });
+    }
+
+    if (res.ok) {
+      aviso('msg-barbero', true, '✅ Guardado.');
+      $('bb-id').value = ''; $('bb-nombre').value = ''; $('bb-telefono').value = ''; $('bb-comision').value = '';
+      $('titulo-form-barbero').textContent = 'Agregar barbero';
+      cargarBarberos();
+    } else {
+      aviso('msg-barbero', false, 'No se pudo guardar.');
+    }
+  }
+
+  async function borrarBarbero(id) {
+    if (!confirm('¿Borrar este barbero? Sus citas históricas se conservan.')) return;
+    await api('PATCH', 'barbero', `id=eq.${id}`, { activo: false });
+    cargarBarberos();
+  }
+
+  // ─── Turnos ───
+  async function programarTurnos() {
+    const barberoId = $('tn-barbero').value;
+    const desde = $('tn-desde').value;
+    const hasta = $('tn-hasta').value;
+    const hini = $('tn-hini').value;
+    const hfin = $('tn-hfin').value;
+
+    if (!barberoId || !desde || !hasta || !hini || !hfin)
+      return aviso('msg-turnos', false, 'Completa todos los campos.');
+    if (hasta < desde)
+      return aviso('msg-turnos', false, 'La fecha final debe ser posterior a la inicial.');
+
+    // Generar una fila por cada día del rango
+    const filas = [];
+    let d = new Date(desde + 'T12:00:00');
+    const fin = new Date(hasta + 'T12:00:00');
+    while (d <= fin) {
+      filas.push({
+        barbero_id: barberoId,
+        fecha: d.toISOString().split('T')[0],
+        hora_inicio: hini,
+        hora_fin: hfin,
+        tipo: 'disponible'
+      });
+      d.setDate(d.getDate() + 1);
+    }
+
+    const res = await api('POST', 'disponibilidad', '', filas);
+    if (res.ok) {
+      aviso('msg-turnos', true, `✅ ${filas.length} días de turnos creados.`);
+      cargarTurnos();
+    } else {
+      aviso('msg-turnos', false, 'No se pudieron crear los turnos.');
+    }
+  }
+
+  async function cargarTurnos() {
+    const hoy = new Date().toISOString().split('T')[0];
+    const limite = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
+    const turnos = await api('GET', 'disponibilidad',
+      `fecha=gte.${hoy}&fecha=lte.${limite}&order=fecha.asc,hora_inicio.asc` +
+      `&select=id,fecha,hora_inicio,hora_fin,tipo,barbero!inner(nombre,barberia_id)` +
+      `&barbero.barberia_id=eq.${barberiaActual}`
+    );
+
+    const cont = $('lista-turnos');
+    cont.innerHTML = (Array.isArray(turnos) && turnos.length) ? '' : '<div class="vacio">Sin turnos programados esta semana.</div>';
+
+    (turnos || []).forEach(t => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <div><b>${t.fecha}</b> · ${t.hora_inicio.slice(0,5)}–${t.hora_fin.slice(0,5)}
+          <div class="sub">💈 ${t.barbero.nombre} · ${t.tipo}</div></div>
+        <button class="btn-peq btn-borrar" onclick="borrarTurno('${t.id}')">Eliminar</button>`;
+      cont.appendChild(div);
+    });
+  }
+
+  async function borrarTurno(id) {
+    if (!confirm('¿Eliminar este turno?')) return;
+    await api('DELETE', 'disponibilidad', `id=eq.${id}`);
+    cargarTurnos();
+  }
+</script>
+</body>
+</html>
