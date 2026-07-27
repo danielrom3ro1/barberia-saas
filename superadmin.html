@@ -13,101 +13,51 @@
       min-height: 100vh;
       font-size: 17px;
     }
-    .top {
-      background: #1a1a2e;
-      color: #fff;
-      padding: 18px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+    .top { background: #1a1a2e; color: #fff; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; }
     .top h1 { font-size: 1.3rem; color: #e0bc6a; }
     .contenedor { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
     .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-    .tab {
-      padding: 12px 22px;
-      border-radius: 10px;
-      border: 1px solid #ddd;
-      background: #fff;
-      cursor: pointer;
-      font-size: 1rem;
-      font-weight: 600;
-      color: #555;
-    }
+    .tab { padding: 12px 22px; border-radius: 10px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 1rem; font-weight: 600; color: #555; }
     .tab.activa { background: #1a1a2e; color: #e0bc6a; border-color: #1a1a2e; }
     .panel { display: none; }
     .panel.activa { display: block; }
-    .card {
-      background: #fff;
-      border-radius: 14px;
-      padding: 26px;
-      margin-bottom: 18px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-    }
+    .card { background: #fff; border-radius: 14px; padding: 26px; margin-bottom: 18px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
     .card h2 { font-size: 1.15rem; margin-bottom: 18px; color: #1a1a2e; }
     label { display: block; font-size: 0.95rem; color: #555; margin: 14px 0 5px; font-weight: 600; }
     input, select {
-      width: 100%;
-      padding: 12px 15px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-      background: #fff;
-      color: #1a1a2e;
+      width: 100%; padding: 12px 15px; border-radius: 10px; border: 1px solid #ccc;
+      font-size: 1rem; background: #fff; color: #1a1a2e;
     }
     input:focus, select:focus { outline: none; border-color: #c9a84c; }
-    .btn {
-      padding: 13px 24px;
-      background: #1a1a2e;
-      color: #e0bc6a;
-      border: none;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      margin-top: 18px;
-    }
+    .btn { padding: 13px 24px; background: #1a1a2e; color: #e0bc6a; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 18px; }
     .btn:hover { opacity: 0.9; }
-    .btn-peq {
-      padding: 8px 14px;
-      font-size: 0.85rem;
-      margin: 0;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
-    }
+    .btn-peq { padding: 8px 14px; font-size: 0.85rem; margin: 0; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
     .btn-editar { background: #eef2ff; color: #3b4bd8; }
     .btn-borrar { background: #ffecec; color: #d9534f; margin-left: 6px; }
-    .item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 0;
-      border-bottom: 1px solid #eee;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
+    .item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #eee; gap: 10px; flex-wrap: wrap; }
     .item:last-child { border-bottom: none; }
     .item .sub { color: #888; font-size: 0.85rem; margin-top: 2px; }
-    .fila { display: flex; gap: 12px; }
-    .fila > div { flex: 1; }
+    .fila { display: flex; gap: 12px; flex-wrap: wrap; }
+    .fila > div { flex: 1; min-width: 120px; }
     .mensaje { padding: 13px; border-radius: 10px; margin-top: 14px; display: none; text-align: center; }
     .exito { background: #e6f7ee; color: #1a7f4e; display: block; }
     .error { background: #fdecec; color: #c0392b; display: block; }
     .vacio { color: #999; text-align: center; padding: 18px; }
-    .selector-barberia {
-      background: #fffbe8;
-      border: 1px solid #e0bc6a;
-      border-radius: 12px;
-      padding: 16px 20px;
-      margin-bottom: 20px;
-    }
+    .selector-barberia { background: #fffbe8; border: 1px solid #e0bc6a; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; }
     #vista-panel { display: none; }
     .badge { font-size: 0.75rem; padding: 3px 10px; border-radius: 20px; font-weight: 700; }
     .badge.on  { background: #e6f7ee; color: #1a7f4e; }
     .badge.off { background: #fdecec; color: #c0392b; }
     .login-caja { max-width: 420px; margin: 60px auto; }
+    .caja-links { display: none; margin-top: 12px; background: #fafafa; border: 1px solid #eee; border-radius: 10px; padding: 14px; width: 100%; }
+    .fila-link { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eee; }
+    .fila-link:last-child { border-bottom: none; }
+    .fila-link .url { font-size: 0.82rem; color: #555; word-break: break-all; }
+    .dias { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+    .dia { padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; cursor: pointer; font-size: 0.85rem; font-weight: 600; user-select: none; }
+    .dia.activo { background: #1a1a2e; color: #e0bc6a; border-color: #1a1a2e; }
+    .barbero-check { display: flex; align-items: center; gap: 8px; padding: 8px 0; }
+    .barbero-check input { width: auto; }
   </style>
 </head>
 <body>
@@ -117,7 +67,6 @@
   <button class="btn-peq btn-borrar" id="btn-salir" style="display:none" onclick="cerrarSesion()">Salir</button>
 </div>
 
-<!-- LOGIN -->
 <div class="login-caja card" id="vista-login">
   <h2>Iniciar sesión</h2>
   <label>Email</label>
@@ -128,7 +77,6 @@
   <div class="mensaje" id="msg-login"></div>
 </div>
 
-<!-- PANEL -->
 <div class="contenedor" id="vista-panel">
 
   <div class="selector-barberia">
@@ -205,12 +153,22 @@
   <!-- TAB TURNOS -->
   <div class="panel" id="panel-turnos">
     <div class="card">
-      <h2>Programar disponibilidad</h2>
-      <label>Barbero</label>
-      <select id="tn-barbero"></select>
+      <h2>Programar disponibilidad masiva</h2>
+      <label>Barberos (marca uno o varios)</label>
+      <div id="tn-barberos-check"></div>
       <div class="fila">
         <div><label>Desde (fecha)</label><input type="date" id="tn-desde" /></div>
         <div><label>Hasta (fecha)</label><input type="date" id="tn-hasta" /></div>
+      </div>
+      <label>Días que aplica</label>
+      <div class="dias" id="tn-dias">
+        <div class="dia activo" data-dia="1">Lun</div>
+        <div class="dia activo" data-dia="2">Mar</div>
+        <div class="dia activo" data-dia="3">Mié</div>
+        <div class="dia activo" data-dia="4">Jue</div>
+        <div class="dia activo" data-dia="5">Vie</div>
+        <div class="dia activo" data-dia="6">Sáb</div>
+        <div class="dia" data-dia="0">Dom</div>
       </div>
       <div class="fila">
         <div><label>Hora inicio</label><input type="time" id="tn-hini" value="08:00" /></div>
@@ -229,20 +187,15 @@
 <script>
   const SUPABASE_URL = 'https://hkcpfkjljgbbdrtwsjbr.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrY3Bma2psamdiYmRydHdzamJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NTQ3MTUsImV4cCI6MjA5ODQzMDcxNX0.0KWTzJ__5A7w1rFu7CoUdjdapGgpGs9dVLc6ZZsLLj4';
+  const SITE_URL = 'https://danielrom3ro1.github.io/barberia-saas';
 
   let accessToken = null;
   let barberiaActual = null;
 
-  // ─── Helpers ───
   const $ = id => document.getElementById(id);
 
   function headers(extra = {}) {
-    return {
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-      ...extra
-    };
+    return { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json', ...extra };
   }
 
   async function api(metodo, tabla, params = '', body = null) {
@@ -258,6 +211,19 @@
     el.className = 'mensaje ' + (ok ? 'exito' : 'error');
     el.textContent = texto;
     setTimeout(() => { el.className = 'mensaje'; }, 4000);
+  }
+
+  function copiarLink(texto, btn) {
+    navigator.clipboard.writeText(texto).then(() => {
+      const original = btn.textContent;
+      btn.textContent = '✅ Copiado';
+      setTimeout(() => { btn.textContent = original; }, 1500);
+    });
+  }
+
+  function toggleLinks(id) {
+    const caja = $('links-' + id);
+    caja.style.display = caja.style.display === 'block' ? 'none' : 'block';
   }
 
   // ─── Login ───
@@ -305,45 +271,59 @@
     cont.innerHTML = '';
     sel.innerHTML = '';
 
-    if (!barberias.length) {
-      cont.innerHTML = '<div class="vacio">Aún no tienes barberías.</div>';
-      return;
-    }
+    if (!barberias.length) { cont.innerHTML = '<div class="vacio">Aún no tienes barberías.</div>'; return; }
 
     barberias.forEach(b => {
+      const linkCliente = `${SITE_URL}/index.html?b=${b.slug}`;
+      const linkBarbero = `${SITE_URL}/barbero.html`;
+      const linkAdmin = `${SITE_URL}/admin.html`;
+
       const div = document.createElement('div');
       div.className = 'item';
+      div.style.flexDirection = 'column';
+      div.style.alignItems = 'stretch';
       div.innerHTML = `
-        <div>
-          <b>${b.nombre}</b> <span class="badge ${b.activa ? 'on' : 'off'}">${b.activa ? 'ACTIVA' : 'INACTIVA'}</span>
-          <div class="sub">/${b.slug} · ${b.whatsapp_admin || 'sin WhatsApp'}</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+          <div>
+            <b>${b.nombre}</b> <span class="badge ${b.activa ? 'on' : 'off'}">${b.activa ? 'ACTIVA' : 'INACTIVA'}</span>
+            <div class="sub">/${b.slug} · ${b.whatsapp_admin || 'sin WhatsApp'}</div>
+          </div>
+          <div>
+            <button class="btn-peq btn-editar" onclick="toggleLinks('${b.id}')">🔗 Links</button>
+            <button class="btn-peq ${b.activa ? 'btn-borrar' : 'btn-editar'}" onclick="alternarBarberia('${b.id}', ${!b.activa})">
+              ${b.activa ? 'Desactivar' : 'Activar'}
+            </button>
+          </div>
         </div>
-        <div>
-          <button class="btn-peq ${b.activa ? 'btn-borrar' : 'btn-editar'}"
-            onclick="alternarBarberia('${b.id}', ${!b.activa})">
-            ${b.activa ? 'Desactivar' : 'Activar'}
-          </button>
+        <div class="caja-links" id="links-${b.id}">
+          <div class="fila-link">
+            <span class="url">👤 Cliente: ${linkCliente}</span>
+            <button class="btn-peq btn-editar" onclick="copiarLink('${linkCliente}', this)">Copiar</button>
+          </div>
+          <div class="fila-link">
+            <span class="url">💈 Barbero (login): ${linkBarbero}</span>
+            <button class="btn-peq btn-editar" onclick="copiarLink('${linkBarbero}', this)">Copiar</button>
+          </div>
+          <div class="fila-link">
+            <span class="url">👑 Admin (login): ${linkAdmin}</span>
+            <button class="btn-peq btn-editar" onclick="copiarLink('${linkAdmin}', this)">Copiar</button>
+          </div>
         </div>`;
       cont.appendChild(div);
 
       const opt = document.createElement('option');
-      opt.value = b.id;
-      opt.textContent = b.nombre;
+      opt.value = b.id; opt.textContent = b.nombre;
       sel.appendChild(opt);
     });
 
     if (!barberiaActual) barberiaActual = barberias[0].id;
     sel.value = barberiaActual;
-    cargarServicios();
-    cargarBarberos();
-    cargarTurnos();
+    cargarServicios(); cargarBarberos(); cargarTurnos();
   }
 
   function cambiarBarberia() {
     barberiaActual = $('sel-barberia').value;
-    cargarServicios();
-    cargarBarberos();
-    cargarTurnos();
+    cargarServicios(); cargarBarberos(); cargarTurnos();
   }
 
   async function crearBarberia() {
@@ -386,29 +366,17 @@
   }
 
   function editarServicio(s) {
-    $('sv-id').value = s.id;
-    $('sv-nombre').value = s.nombre;
-    $('sv-duracion').value = s.duracion_min;
-    $('sv-precio').value = s.precio;
+    $('sv-id').value = s.id; $('sv-nombre').value = s.nombre;
+    $('sv-duracion').value = s.duracion_min; $('sv-precio').value = s.precio;
     $('titulo-form-servicio').textContent = 'Editar servicio: ' + s.nombre;
   }
 
   async function guardarServicio() {
     const id = $('sv-id').value;
-    const body = {
-      nombre: $('sv-nombre').value.trim(),
-      duracion_min: parseInt($('sv-duracion').value),
-      precio: parseFloat($('sv-precio').value)
-    };
-    if (!body.nombre || !body.duracion_min || !body.precio)
-      return aviso('msg-servicio', false, 'Completa todos los campos.');
+    const body = { nombre: $('sv-nombre').value.trim(), duracion_min: parseInt($('sv-duracion').value), precio: parseFloat($('sv-precio').value) };
+    if (!body.nombre || !body.duracion_min || !body.precio) return aviso('msg-servicio', false, 'Completa todos los campos.');
 
-    let res;
-    if (id) {
-      res = await api('PATCH', 'servicio', `id=eq.${id}`, body);
-    } else {
-      res = await api('POST', 'servicio', '', { ...body, barberia_id: barberiaActual });
-    }
+    const res = id ? await api('PATCH', 'servicio', `id=eq.${id}`, body) : await api('POST', 'servicio', '', { ...body, barberia_id: barberiaActual });
 
     if (res.ok) {
       aviso('msg-servicio', true, '✅ Guardado.');
@@ -422,7 +390,6 @@
 
   async function borrarServicio(id) {
     if (!confirm('¿Borrar este servicio? Dejará de aparecer en la página de booking.')) return;
-    // Borrado suave: se desactiva en vez de eliminar, para no romper citas antiguas
     await api('PATCH', 'servicio', `id=eq.${id}`, { activo: false });
     cargarServicios();
   }
@@ -431,9 +398,7 @@
   async function cargarBarberos() {
     const barberos = await api('GET', 'barbero', `barberia_id=eq.${barberiaActual}&activo=eq.true&select=id,nombre,telefono,comision_pct&order=nombre.asc`);
     const cont = $('lista-barberos');
-    const sel = $('tn-barbero');
     cont.innerHTML = barberos.length ? '' : '<div class="vacio">Sin barberos.</div>';
-    sel.innerHTML = '';
 
     barberos.forEach(b => {
       const div = document.createElement('div');
@@ -445,37 +410,31 @@
           <button class="btn-peq btn-borrar" onclick="borrarBarbero('${b.id}')">Borrar</button>
         </div>`;
       cont.appendChild(div);
-
-      const opt = document.createElement('option');
-      opt.value = b.id;
-      opt.textContent = b.nombre;
-      sel.appendChild(opt);
     });
+
+    // Checkboxes para turnos masivos
+    const contCheck = $('tn-barberos-check');
+    contCheck.innerHTML = barberos.length
+      ? barberos.map(b => `
+          <div class="barbero-check">
+            <input type="checkbox" class="chk-barbero" value="${b.id}" id="chk-${b.id}" checked />
+            <label style="margin:0" for="chk-${b.id}">💈 ${b.nombre}</label>
+          </div>`).join('')
+      : '<div class="vacio">Sin barberos para programar.</div>';
   }
 
   function editarBarbero(b) {
-    $('bb-id').value = b.id;
-    $('bb-nombre').value = b.nombre;
-    $('bb-telefono').value = b.telefono || '';
-    $('bb-comision').value = b.comision_pct || 0;
+    $('bb-id').value = b.id; $('bb-nombre').value = b.nombre;
+    $('bb-telefono').value = b.telefono || ''; $('bb-comision').value = b.comision_pct || 0;
     $('titulo-form-barbero').textContent = 'Editar barbero: ' + b.nombre;
   }
 
   async function guardarBarbero() {
     const id = $('bb-id').value;
-    const body = {
-      nombre: $('bb-nombre').value.trim(),
-      telefono: $('bb-telefono').value.trim(),
-      comision_pct: parseFloat($('bb-comision').value) || 0
-    };
+    const body = { nombre: $('bb-nombre').value.trim(), telefono: $('bb-telefono').value.trim(), comision_pct: parseFloat($('bb-comision').value) || 0 };
     if (!body.nombre) return aviso('msg-barbero', false, 'El nombre es obligatorio.');
 
-    let res;
-    if (id) {
-      res = await api('PATCH', 'barbero', `id=eq.${id}`, body);
-    } else {
-      res = await api('POST', 'barbero', '', { ...body, barberia_id: barberiaActual });
-    }
+    const res = id ? await api('PATCH', 'barbero', `id=eq.${id}`, body) : await api('POST', 'barbero', '', { ...body, barberia_id: barberiaActual });
 
     if (res.ok) {
       aviso('msg-barbero', true, '✅ Guardado.');
@@ -493,37 +452,39 @@
     cargarBarberos();
   }
 
-  // ─── Turnos ───
+  // ─── Turnos masivos ───
+  document.addEventListener('click', e => {
+    if (e.target.classList.contains('dia')) e.target.classList.toggle('activo');
+  });
+
   async function programarTurnos() {
-    const barberoId = $('tn-barbero').value;
-    const desde = $('tn-desde').value;
-    const hasta = $('tn-hasta').value;
-    const hini = $('tn-hini').value;
-    const hfin = $('tn-hfin').value;
+    const barberosIds = [...document.querySelectorAll('.chk-barbero:checked')].map(c => c.value);
+    const desde = $('tn-desde').value, hasta = $('tn-hasta').value;
+    const hini = $('tn-hini').value, hfin = $('tn-hfin').value;
+    const diasActivos = [...document.querySelectorAll('#tn-dias .dia.activo')].map(d => parseInt(d.dataset.dia));
 
-    if (!barberoId || !desde || !hasta || !hini || !hfin)
-      return aviso('msg-turnos', false, 'Completa todos los campos.');
-    if (hasta < desde)
-      return aviso('msg-turnos', false, 'La fecha final debe ser posterior a la inicial.');
+    if (!barberosIds.length) return aviso('msg-turnos', false, 'Selecciona al menos un barbero.');
+    if (!desde || !hasta || !hini || !hfin) return aviso('msg-turnos', false, 'Completa fecha y horas.');
+    if (hasta < desde) return aviso('msg-turnos', false, 'La fecha final debe ser posterior a la inicial.');
+    if (!diasActivos.length) return aviso('msg-turnos', false, 'Selecciona al menos un día de la semana.');
 
-    // Generar una fila por cada día del rango
     const filas = [];
-    let d = new Date(desde + 'T12:00:00');
-    const fin = new Date(hasta + 'T12:00:00');
-    while (d <= fin) {
-      filas.push({
-        barbero_id: barberoId,
-        fecha: d.toISOString().split('T')[0],
-        hora_inicio: hini,
-        hora_fin: hfin,
-        tipo: 'disponible'
-      });
-      d.setDate(d.getDate() + 1);
-    }
+    barberosIds.forEach(barberoId => {
+      let d = new Date(desde + 'T12:00:00');
+      const fin = new Date(hasta + 'T12:00:00');
+      while (d <= fin) {
+        if (diasActivos.includes(d.getDay())) {
+          filas.push({ barbero_id: barberoId, fecha: d.toISOString().split('T')[0], hora_inicio: hini, hora_fin: hfin, tipo: 'disponible' });
+        }
+        d.setDate(d.getDate() + 1);
+      }
+    });
+
+    if (!filas.length) return aviso('msg-turnos', false, 'No hay días que coincidan con la selección.');
 
     const res = await api('POST', 'disponibilidad', '', filas);
     if (res.ok) {
-      aviso('msg-turnos', true, `✅ ${filas.length} días de turnos creados.`);
+      aviso('msg-turnos', true, `✅ ${filas.length} turnos creados para ${barberosIds.length} barbero(s).`);
       cargarTurnos();
     } else {
       aviso('msg-turnos', false, 'No se pudieron crear los turnos.');
@@ -535,8 +496,7 @@
     const limite = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
     const turnos = await api('GET', 'disponibilidad',
       `fecha=gte.${hoy}&fecha=lte.${limite}&order=fecha.asc,hora_inicio.asc` +
-      `&select=id,fecha,hora_inicio,hora_fin,tipo,barbero!inner(nombre,barberia_id)` +
-      `&barbero.barberia_id=eq.${barberiaActual}`
+      `&select=id,fecha,hora_inicio,hora_fin,tipo,barbero!inner(nombre,barberia_id)&barbero.barberia_id=eq.${barberiaActual}`
     );
 
     const cont = $('lista-turnos');
@@ -545,9 +505,7 @@
     (turnos || []).forEach(t => {
       const div = document.createElement('div');
       div.className = 'item';
-      div.innerHTML = `
-        <div><b>${t.fecha}</b> · ${t.hora_inicio.slice(0,5)}–${t.hora_fin.slice(0,5)}
-          <div class="sub">💈 ${t.barbero.nombre} · ${t.tipo}</div></div>
+      div.innerHTML = `<div><b>${t.fecha}</b> · ${t.hora_inicio.slice(0,5)}–${t.hora_fin.slice(0,5)}<div class="sub">💈 ${t.barbero.nombre} · ${t.tipo}</div></div>
         <button class="btn-peq btn-borrar" onclick="borrarTurno('${t.id}')">Eliminar</button>`;
       cont.appendChild(div);
     });
