@@ -3,445 +3,561 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Panel Admin — Barber Kings</title>
+  <title>Panel Admin</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #0f0f0f;
-      color: #f0f0f0;
+      background: #f5f6f8;
+      color: #1a1a2e;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px 16px;
+      font-size: 17px;
     }
-    h1 { font-size: 1.6rem; color: #c9a84c; margin-bottom: 24px; }
-    .card {
-      background: #1a1a1a;
-      border-radius: 12px;
-      padding: 28px;
-      width: 100%;
-      max-width: 640px;
-      margin-bottom: 16px;
-    }
-    .card h2 { font-size: 0.95rem; color: #c9a84c; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
-    label { display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 4px; margin-top: 12px; }
+    .top { background: #1a1a2e; color: #fff; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; }
+    .top h1 { font-size: 1.3rem; color: #e0bc6a; }
+    .contenedor { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    .tab { padding: 12px 22px; border-radius: 10px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 1rem; font-weight: 600; color: #555; }
+    .tab.activa { background: #1a1a2e; color: #e0bc6a; border-color: #1a1a2e; }
+    .panel { display: none; }
+    .panel.activa { display: block; }
+    .card { background: #fff; border-radius: 14px; padding: 26px; margin-bottom: 18px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+    .card h2 { font-size: 1.15rem; margin-bottom: 18px; color: #1a1a2e; }
+    label { display: block; font-size: 0.95rem; color: #555; margin: 14px 0 5px; font-weight: 600; }
     input, select {
-      width: 100%;
-      padding: 10px 14px;
-      border-radius: 8px;
-      border: 1px solid #333;
-      background: #111;
-      color: #f0f0f0;
-      font-size: 0.95rem;
+      width: 100%; padding: 12px 15px; border-radius: 10px; border: 1px solid #ccc;
+      font-size: 1rem; background: #fff; color: #1a1a2e;
     }
-    input:focus { outline: none; border-color: #c9a84c; }
-    .btn {
-      width: 100%;
-      padding: 13px;
-      background: #c9a84c;
-      color: #000;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      margin-top: 16px;
-    }
-    .btn:hover { background: #e0bc6a; }
-    .btn-sec { background: transparent; color: #c9a84c; border: 1px solid #c9a84c; }
-    .cita {
-      border: 1px solid #2a2a2a;
-      border-left: 4px solid #c9a84c;
-      border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 8px;
-      font-size: 0.9rem;
-    }
-    .cita.cancelada { border-left-color: #d9534f; opacity: 0.5; }
-    .item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #2a2a2a;
-      padding: 10px 0;
-      font-size: 0.92rem;
-    }
+    input:focus, select:focus { outline: none; border-color: #c9a84c; }
+    .btn { padding: 13px 24px; background: #1a1a2e; color: #e0bc6a; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 18px; }
+    .btn:hover { opacity: 0.9; }
+    .btn-peq { padding: 8px 14px; font-size: 0.85rem; margin: 0; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
+    .btn-editar { background: #eef2ff; color: #3b4bd8; }
+    .btn-borrar { background: #ffecec; color: #d9534f; margin-left: 6px; }
+    .item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #eee; gap: 10px; flex-wrap: wrap; }
     .item:last-child { border-bottom: none; }
-    .item .sub { color: #888; font-size: 0.8rem; }
-    .metrica {
-      display: flex;
-      justify-content: space-between;
-      padding: 12px;
-      background: #111;
-      border-radius: 8px;
-      margin-bottom: 8px;
-    }
-    .metrica .valor { color: #c9a84c; font-weight: 700; }
-    .mensaje { text-align: center; padding: 12px; border-radius: 8px; margin-top: 12px; display: none; }
-    .mensaje.exito { background: #0d2b1a; color: #4caf7d; display: block; }
-    .mensaje.error { background: #2b0d0d; color: #f44; display: block; }
-    .vacio { color: #666; text-align: center; padding: 16px; }
-    #vista-panel { display: none; width: 100%; max-width: 640px; }
-    .fila { display: flex; gap: 10px; }
-    .fila > div { flex: 1; }
-    .header-panel {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-      max-width: 640px;
-      margin-bottom: 16px;
-    }
-    .btn-salir {
-      background: transparent;
-      border: 1px solid #444;
-      color: #888;
-      padding: 8px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 0.85rem;
-    }
+    .item .sub { color: #888; font-size: 0.85rem; margin-top: 2px; }
+    .fila { display: flex; gap: 12px; flex-wrap: wrap; }
+    .fila > div { flex: 1; min-width: 120px; }
+    .mensaje { padding: 13px; border-radius: 10px; margin-top: 14px; display: none; text-align: center; }
+    .exito { background: #e6f7ee; color: #1a7f4e; display: block; }
+    .error { background: #fdecec; color: #c0392b; display: block; }
+    .vacio { color: #999; text-align: center; padding: 18px; }
+    #vista-panel { display: none; }
+    .badge { font-size: 0.75rem; padding: 3px 10px; border-radius: 20px; font-weight: 700; }
+    .login-caja { max-width: 420px; margin: 60px auto; }
+    .dias { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+    .dia { padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; cursor: pointer; font-size: 0.85rem; font-weight: 600; user-select: none; }
+    .dia.activo { background: #1a1a2e; color: #e0bc6a; border-color: #1a1a2e; }
   </style>
 </head>
 <body>
 
-<h1>👑 Panel de Administración</h1>
+<div class="top">
+  <h1 id="titulo-top">👑 Panel Admin</h1>
+  <button class="btn-peq btn-borrar" id="btn-salir" style="display:none" onclick="cerrarSesion()">Salir</button>
+</div>
 
-<!-- LOGIN -->
-<div class="card" id="vista-login">
+<div class="login-caja card" id="vista-login">
   <h2>Iniciar sesión</h2>
   <label>Email</label>
-  <input type="email" id="input-email" placeholder="admin@email.com" />
+  <input type="email" id="input-email" />
   <label>Contraseña</label>
-  <input type="password" id="input-password" placeholder="••••••••" />
+  <input type="password" id="input-password" />
   <button class="btn" onclick="iniciarSesion()">Entrar</button>
   <div class="mensaje" id="msg-login"></div>
 </div>
 
-<!-- PANEL -->
-<div id="vista-panel">
-  <div class="header-panel">
-    <span style="color:#c9a84c; font-weight:600;">👑 Administrador</span>
-    <button class="btn-salir" onclick="cerrarSesion()">Cerrar sesión</button>
+<div class="contenedor" id="vista-panel">
+  <div class="tabs">
+    <button class="tab activa" onclick="verTab('metricas', this)">📊 Métricas</button>
+    <button class="tab" onclick="verTab('citas', this)">📅 Citas</button>
+    <button class="tab" onclick="verTab('servicios', this)">✂️ Servicios</button>
+    <button class="tab" onclick="verTab('barberos', this)">💈 Barberos</button>
+    <button class="tab" onclick="verTab('turnos', this)">🕐 Turnos</button>
   </div>
 
   <!-- MÉTRICAS -->
-  <div class="card">
-    <h2>📊 Métricas del período</h2>
-    <div class="fila">
-      <div>
-        <label>Desde</label>
-        <input type="date" id="met-desde" onchange="cargarMetricas()" />
+  <div class="panel activa" id="panel-metricas">
+    <div class="card">
+      <h2>Métricas del período</h2>
+      <div class="fila">
+        <div><label>Desde</label><input type="date" id="met-desde" onchange="cargarMetricas()" /></div>
+        <div><label>Hasta</label><input type="date" id="met-hasta" onchange="cargarMetricas()" /></div>
       </div>
-      <div>
-        <label>Hasta</label>
-        <input type="date" id="met-hasta" onchange="cargarMetricas()" />
-      </div>
+      <div id="lista-metricas" style="margin-top:16px;"></div>
     </div>
-    <div id="lista-metricas" style="margin-top:16px;"></div>
   </div>
 
   <!-- CITAS -->
-  <div class="card">
-    <h2>📅 Todas las citas</h2>
-    <label>Fecha</label>
-    <input type="date" id="filtro-fecha" onchange="cargarCitas()" />
-    <div id="lista-citas" style="margin-top:16px;"></div>
+  <div class="panel" id="panel-citas">
+    <div class="card">
+      <h2>Citas de todos tus barberos</h2>
+      <label>Fecha</label>
+      <input type="date" id="filtro-fecha" onchange="cargarCitas()" />
+      <div id="lista-citas" style="margin-top:16px;"></div>
+    </div>
+    <div class="card" id="card-editar-cita" style="display:none">
+      <h2>Editar cita</h2>
+      <input type="hidden" id="ec-id" />
+      <div class="fila">
+        <div><label>Barbero</label><select id="ec-barbero"></select></div>
+        <div><label>Servicio</label><select id="ec-servicio"></select></div>
+      </div>
+      <div class="fila">
+        <div><label>Fecha</label><input type="date" id="ec-fecha" /></div>
+        <div><label>Hora</label><input type="time" id="ec-hora" /></div>
+      </div>
+      <button class="btn" onclick="guardarEdicionCita()">Guardar cambios</button>
+      <button class="btn-peq btn-borrar" style="margin-top:18px" onclick="cancelarEdicionCita()">Cancelar edición</button>
+      <div class="mensaje" id="msg-editar-cita"></div>
+    </div>
   </div>
 
   <!-- SERVICIOS -->
-  <div class="card">
-    <h2>✂️ Servicios</h2>
-    <div id="lista-servicios"></div>
-    <label>Nombre del nuevo servicio</label>
-    <input type="text" id="serv-nombre" placeholder="Ej: Corte + cejas" />
-    <div class="fila">
-      <div>
-        <label>Duración (min)</label>
-        <input type="number" id="serv-duracion" placeholder="30" />
-      </div>
-      <div>
-        <label>Precio (COP)</label>
-        <input type="number" id="serv-precio" placeholder="25000" />
-      </div>
+  <div class="panel" id="panel-servicios">
+    <div class="card">
+      <h2>Servicios</h2>
+      <div id="lista-servicios"></div>
     </div>
-    <button class="btn btn-sec" onclick="crearServicio()">Agregar servicio</button>
-    <div class="mensaje" id="msg-servicio"></div>
+    <div class="card">
+      <h2 id="titulo-form-servicio">Agregar servicio</h2>
+      <input type="hidden" id="sv-id" />
+      <label>Nombre</label>
+      <input type="text" id="sv-nombre" />
+      <div class="fila">
+        <div><label>Duración (min)</label><input type="number" id="sv-duracion" /></div>
+        <div><label>Precio (COP)</label><input type="number" id="sv-precio" /></div>
+      </div>
+      <button class="btn" onclick="guardarServicio()">Guardar</button>
+      <div class="mensaje" id="msg-servicio"></div>
+    </div>
   </div>
 
   <!-- BARBEROS -->
-  <div class="card">
-    <h2>💈 Barberos</h2>
-    <div id="lista-barberos"></div>
-    <label>Nombre del nuevo barbero</label>
-    <input type="text" id="barb-nombre" placeholder="Ej: Pedro Gómez" />
-    <div class="fila">
-      <div>
-        <label>WhatsApp</label>
-        <input type="tel" id="barb-telefono" placeholder="+573001234567" />
-      </div>
-      <div>
-        <label>Comisión (%)</label>
-        <input type="number" id="barb-comision" placeholder="40" />
-      </div>
+  <div class="panel" id="panel-barberos">
+    <div class="card">
+      <h2>Barberos</h2>
+      <div id="lista-barberos"></div>
     </div>
-    <button class="btn btn-sec" onclick="crearBarbero()">Agregar barbero</button>
-    <div class="mensaje" id="msg-barbero"></div>
+    <div class="card">
+      <h2 id="titulo-form-barbero">Agregar barbero</h2>
+      <input type="hidden" id="bb-id" />
+      <label>Nombre</label>
+      <input type="text" id="bb-nombre" />
+      <div class="fila">
+        <div><label>WhatsApp</label><input type="tel" id="bb-telefono" placeholder="+57..." /></div>
+        <div><label>Comisión (%)</label><input type="number" id="bb-comision" /></div>
+      </div>
+      <button class="btn" onclick="guardarBarbero()">Guardar</button>
+      <div class="mensaje" id="msg-barbero"></div>
+    </div>
+  </div>
+
+  <!-- TURNOS -->
+  <div class="panel" id="panel-turnos">
+    <div class="card">
+      <h2>Programar disponibilidad</h2>
+      <label>Barbero</label>
+      <select id="tn-barbero"></select>
+      <div class="fila">
+        <div><label>Desde (fecha)</label><input type="date" id="tn-desde" /></div>
+        <div><label>Hasta (fecha)</label><input type="date" id="tn-hasta" /></div>
+      </div>
+      <label>Días que aplica</label>
+      <div class="dias" id="tn-dias">
+        <div class="dia activo" data-dia="1">Lun</div>
+        <div class="dia activo" data-dia="2">Mar</div>
+        <div class="dia activo" data-dia="3">Mié</div>
+        <div class="dia activo" data-dia="4">Jue</div>
+        <div class="dia activo" data-dia="5">Vie</div>
+        <div class="dia activo" data-dia="6">Sáb</div>
+        <div class="dia" data-dia="0">Dom</div>
+      </div>
+      <div class="fila">
+        <div><label>Hora inicio</label><input type="time" id="tn-hini" value="08:00" /></div>
+        <div><label>Hora fin</label><input type="time" id="tn-hfin" value="20:00" /></div>
+      </div>
+      <button class="btn" onclick="programarTurnos()">Crear turnos</button>
+      <div class="mensaje" id="msg-turnos"></div>
+    </div>
+    <div class="card">
+      <h2>Turnos próximos (7 días)</h2>
+      <div id="lista-turnos"></div>
+    </div>
   </div>
 </div>
 
 <script>
   const SUPABASE_URL = 'https://hkcpfkjljgbbdrtwsjbr.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrY3Bma2psamdiYmRydHdzamJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NTQ3MTUsImV4cCI6MjA5ODQzMDcxNX0.0KWTzJ__5A7w1rFu7CoUdjdapGgpGs9dVLc6ZZsLLj4';
-  const BARBERIA_ID = 'f8566d72-7b42-4b79-ae2f-aeb4168d3ef3';
 
   let accessToken = null;
+  let barberiaId = null;
+  let serviciosCache = [];
+  let barberosCache = [];
 
+  const $ = id => document.getElementById(id);
+
+  function headers(extra = {}) {
+    return { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json', ...extra };
+  }
+
+  async function api(metodo, tabla, params = '', body = null) {
+    const opts = { method: metodo, headers: headers() };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${tabla}?${params}`, opts);
+    if (metodo === 'GET') return res.json();
+    return res;
+  }
+
+  function aviso(id, ok, texto) {
+    const el = $(id);
+    el.className = 'mensaje ' + (ok ? 'exito' : 'error');
+    el.textContent = texto;
+    setTimeout(() => { el.className = 'mensaje'; }, 4000);
+  }
+
+  // Convierte un timestamp ISO a fecha/hora local de Bogotá para prellenar formularios
+  function aFechaHoraLocal(iso) {
+    const d = new Date(iso);
+    const fecha = d.toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
+    const hora = d.toLocaleTimeString('en-GB', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' });
+    return { fecha, hora };
+  }
+
+  // ─── Login ───
   async function iniciarSesion() {
-    const email = document.getElementById('input-email').value.trim();
-    const password = document.getElementById('input-password').value;
-    const msg = document.getElementById('msg-login');
-    msg.className = 'mensaje';
-
     const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
       method: 'POST',
       headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email: $('input-email').value.trim(), password: $('input-password').value })
     });
     const data = await res.json();
+    if (!res.ok) return aviso('msg-login', false, 'Credenciales incorrectas.');
 
-    if (!res.ok) {
-      msg.className = 'mensaje error';
-      msg.textContent = 'Email o contraseña incorrectos.';
-      return;
-    }
     accessToken = data.access_token;
-
-    // Verificar que sea admin
-    const perfil = await consultar('perfiles', 'select=rol');
+    const perfil = await api('GET', 'perfiles', 'select=rol,barberia_id');
     if (!perfil.length || perfil[0].rol !== 'admin') {
-      msg.className = 'mensaje error';
-      msg.textContent = 'Este usuario no es administrador.';
       accessToken = null;
-      return;
+      return aviso('msg-login', false, 'Este usuario no es administrador.');
     }
+    barberiaId = perfil[0].barberia_id;
 
-    document.getElementById('vista-login').style.display = 'none';
-    document.getElementById('vista-panel').style.display = 'block';
+    const barberia = await api('GET', 'barberia', `id=eq.${barberiaId}&select=nombre`);
+    $('titulo-top').textContent = '👑 ' + (barberia[0]?.nombre || 'Panel Admin');
 
-    // Fechas por defecto: mes actual
-    const hoy = new Date();
-    const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().split('T')[0];
-    const hoyStr = hoy.toISOString().split('T')[0];
-    document.getElementById('met-desde').value = inicioMes;
-    document.getElementById('met-hasta').value = hoyStr;
-    document.getElementById('filtro-fecha').value = hoyStr;
+    $('vista-login').style.display = 'none';
+    $('vista-panel').style.display = 'block';
+    $('btn-salir').style.display = 'inline-block';
+
+    const hoy = new Date().toISOString().split('T')[0];
+    const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+    $('met-desde').value = inicioMes;
+    $('met-hasta').value = hoy;
+    $('filtro-fecha').value = hoy;
+    $('tn-desde').min = hoy;
+    $('tn-hasta').min = hoy;
 
     cargarMetricas();
     cargarCitas();
     cargarServicios();
     cargarBarberos();
+    cargarTurnos();
   }
 
   function cerrarSesion() {
-    accessToken = null;
-    document.getElementById('vista-panel').style.display = 'none';
-    document.getElementById('vista-login').style.display = 'block';
+    accessToken = null; barberiaId = null;
+    $('vista-panel').style.display = 'none';
+    $('vista-login').style.display = 'block';
+    $('btn-salir').style.display = 'none';
   }
 
-  async function consultar(tabla, params) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${tabla}?${params}`, {
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${accessToken}` }
-    });
-    return res.json();
+  function verTab(nombre, boton) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('activa'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('activa'));
+    boton.classList.add('activa');
+    $('panel-' + nombre).classList.add('activa');
   }
 
-  async function insertar(tabla, body) {
-    return fetch(`${SUPABASE_URL}/rest/v1/${tabla}`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    });
-  }
-
-  // ── MÉTRICAS ──
+  // ─── Métricas ───
   async function cargarMetricas() {
-    const desde = document.getElementById('met-desde').value;
-    const hasta = document.getElementById('met-hasta').value;
+    const desde = $('met-desde').value, hasta = $('met-hasta').value;
     if (!desde || !hasta) return;
 
-    const citas = await consultar('cita',
-      `inicio=gte.${desde}T00:00:00-05:00` +
-      `&inicio=lte.${hasta}T23:59:59-05:00` +
-      `&estado=neq.cancelada` +
+    const citas = await api('GET', 'cita',
+      `inicio=gte.${desde}T00:00:00-05:00&inicio=lte.${hasta}T23:59:59-05:00&estado=neq.cancelada` +
       `&select=barbero_id,barbero(nombre,comision_pct),servicio(precio)`
     );
 
-    const cont = document.getElementById('lista-metricas');
+    const cont = $('lista-metricas');
     cont.innerHTML = '';
+    if (!Array.isArray(citas) || !citas.length) { cont.innerHTML = '<div class="vacio">Sin citas en este período.</div>'; return; }
 
-    if (!Array.isArray(citas) || !citas.length) {
-      cont.innerHTML = '<div class="vacio">Sin citas en este período.</div>';
-      return;
-    }
-
-    // Agrupar por barbero
-    const porBarbero = {};
-    let totalGeneral = 0;
+    const porBarbero = {}; let total = 0;
     citas.forEach(c => {
       const nombre = c.barbero?.nombre || 'Desconocido';
       const precio = Number(c.servicio?.precio || 0);
       if (!porBarbero[nombre]) porBarbero[nombre] = { citas: 0, ingresos: 0, comision: c.barbero?.comision_pct || 0 };
-      porBarbero[nombre].citas++;
-      porBarbero[nombre].ingresos += precio;
-      totalGeneral += precio;
+      porBarbero[nombre].citas++; porBarbero[nombre].ingresos += precio; total += precio;
     });
 
     Object.entries(porBarbero).forEach(([nombre, m]) => {
       const div = document.createElement('div');
-      div.className = 'metrica';
-      div.innerHTML = `
-        <div>💈 ${nombre}<div class="sub" style="color:#888;font-size:0.8rem">${m.citas} citas · comisión ${m.comision}%</div></div>
-        <div class="valor">$${m.ingresos.toLocaleString('es-CO')}</div>
-      `;
+      div.className = 'item';
+      div.innerHTML = `<div><b>💈 ${nombre}</b><div class="sub">${m.citas} citas · comisión ${m.comision}%</div></div><div style="color:#c9a84c;font-weight:700">$${m.ingresos.toLocaleString('es-CO')}</div>`;
       cont.appendChild(div);
     });
 
-    const total = document.createElement('div');
-    total.className = 'metrica';
-    total.style.borderTop = '2px solid #c9a84c';
-    total.innerHTML = `<div><b>TOTAL</b></div><div class="valor">$${totalGeneral.toLocaleString('es-CO')} COP</div>`;
-    cont.appendChild(total);
+    const divTotal = document.createElement('div');
+    divTotal.className = 'item';
+    divTotal.style.borderTop = '2px solid #1a1a2e';
+    divTotal.innerHTML = `<div><b>TOTAL</b></div><div style="color:#1a1a2e;font-weight:700">$${total.toLocaleString('es-CO')} COP</div>`;
+    cont.appendChild(divTotal);
   }
 
-  // ── CITAS ──
+  // ─── Citas: ver, editar, cancelar ───
   async function cargarCitas() {
-    const fecha = document.getElementById('filtro-fecha').value;
-    const citas = await consultar('cita',
-      `inicio=gte.${fecha}T00:00:00-05:00` +
-      `&inicio=lte.${fecha}T23:59:59-05:00` +
-      `&order=inicio.asc` +
-      `&select=inicio,estado,barbero(nombre),cliente(nombre,telefono),servicio(nombre)`
+    const fecha = $('filtro-fecha').value;
+    const citas = await api('GET', 'cita',
+      `inicio=gte.${fecha}T00:00:00-05:00&inicio=lte.${fecha}T23:59:59-05:00&order=inicio.asc` +
+      `&select=id,inicio,estado,token_cancelacion,barbero_id,servicio_id,barbero(nombre),cliente(nombre,telefono),servicio(nombre)`
     );
 
-    const cont = document.getElementById('lista-citas');
+    const cont = $('lista-citas');
     cont.innerHTML = '';
-
-    if (!Array.isArray(citas) || !citas.length) {
-      cont.innerHTML = '<div class="vacio">No hay citas para esta fecha.</div>';
-      return;
-    }
+    if (!Array.isArray(citas) || !citas.length) { cont.innerHTML = '<div class="vacio">No hay citas para esta fecha.</div>'; return; }
 
     citas.forEach(c => {
-      const hora = new Date(c.inicio).toLocaleTimeString('es-CO', {
-        timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit'
-      });
+      const hora = new Date(c.inicio).toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' });
       const div = document.createElement('div');
-      div.className = 'cita' + (c.estado === 'cancelada' ? ' cancelada' : '');
+      div.className = 'item';
+      const botones = c.estado === 'cancelada' ? '' : `
+        <button class="btn-peq btn-editar" onclick='editarCita(${JSON.stringify(c)})'>Editar</button>
+        <button class="btn-peq btn-borrar" onclick="cancelarCitaAdmin('${c.token_cancelacion}')">Cancelar</button>`;
       div.innerHTML = `
-        <b style="color:#c9a84c">${hora}</b> — 💈 ${c.barbero?.nombre || ''}<br>
-        👤 ${c.cliente?.nombre || ''} · ✂️ ${c.servicio?.nombre || ''} · <small>${c.estado}</small>
-      `;
+        <div><b>${hora}</b> — 💈 ${c.barbero?.nombre || ''}<div class="sub">👤 ${c.cliente?.nombre || ''} · ✂️ ${c.servicio?.nombre || ''} · ${c.estado}</div></div>
+        <div>${botones}</div>`;
       cont.appendChild(div);
     });
   }
 
-  // ── SERVICIOS ──
+  function editarCita(c) {
+    const { fecha, hora } = aFechaHoraLocal(c.inicio);
+    $('ec-id').value = c.id;
+    $('ec-fecha').value = fecha;
+    $('ec-hora').value = hora;
+
+    const selBarbero = $('ec-barbero');
+    selBarbero.innerHTML = barberosCache.map(b => `<option value="${b.id}" ${b.id === c.barbero_id ? 'selected' : ''}>${b.nombre}</option>`).join('');
+    const selServicio = $('ec-servicio');
+    selServicio.innerHTML = serviciosCache.map(s => `<option value="${s.id}" ${s.id === c.servicio_id ? 'selected' : ''}>${s.nombre}</option>`).join('');
+
+    $('card-editar-cita').style.display = 'block';
+    $('card-editar-cita').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function cancelarEdicionCita() {
+    $('card-editar-cita').style.display = 'none';
+  }
+
+  async function guardarEdicionCita() {
+    const id = $('ec-id').value;
+    const barberoId = $('ec-barbero').value;
+    const servicioId = $('ec-servicio').value;
+    const fecha = $('ec-fecha').value;
+    const hora = $('ec-hora').value;
+
+    const servicio = serviciosCache.find(s => s.id === servicioId);
+    if (!servicio) return aviso('msg-editar-cita', false, 'Selecciona un servicio válido.');
+
+    const [h, m] = hora.split(':').map(Number);
+    const finMin = h * 60 + m + servicio.duracion_min;
+    const horaFin = `${String(Math.floor(finMin/60)).padStart(2,'0')}:${String(finMin%60).padStart(2,'0')}`;
+
+    const res = await api('PATCH', 'cita', `id=eq.${id}`, {
+      barbero_id: barberoId,
+      servicio_id: servicioId,
+      inicio: `${fecha}T${hora}:00-05:00`,
+      fin: `${fecha}T${horaFin}:00-05:00`
+    });
+
+    if (res.ok) {
+      aviso('msg-editar-cita', true, '✅ Cita actualizada.');
+      $('card-editar-cita').style.display = 'none';
+      cargarCitas();
+    } else {
+      const err = await res.json();
+      aviso('msg-editar-cita', false, err.code === '23P01' ? 'Ese barbero ya tiene una cita en ese horario.' : 'No se pudo actualizar.');
+    }
+  }
+
+  async function cancelarCitaAdmin(token) {
+    if (!confirm('¿Cancelar esta cita? Se notificará al barbero por WhatsApp.')) return;
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/cancelar-cita?token=${encodeURIComponent(token)}`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    if (res.ok) cargarCitas();
+    else alert('No se pudo cancelar la cita.');
+  }
+
+  // ─── Servicios ───
   async function cargarServicios() {
-    const servicios = await consultar('servicio', `barberia_id=eq.${BARBERIA_ID}&activo=eq.true&select=id,nombre,duracion_min,precio&order=nombre.asc`);
-    const cont = document.getElementById('lista-servicios');
-    cont.innerHTML = '';
+    const servicios = await api('GET', 'servicio', `barberia_id=eq.${barberiaId}&activo=eq.true&select=id,nombre,duracion_min,precio&order=nombre.asc`);
+    serviciosCache = servicios;
+    const cont = $('lista-servicios');
+    cont.innerHTML = servicios.length ? '' : '<div class="vacio">Sin servicios.</div>';
     servicios.forEach(s => {
       const div = document.createElement('div');
       div.className = 'item';
       div.innerHTML = `
-        <div>${s.nombre}<div class="sub">${s.duracion_min} min</div></div>
-        <div style="color:#c9a84c">$${Number(s.precio).toLocaleString('es-CO')}</div>
-      `;
+        <div><b>${s.nombre}</b><div class="sub">${s.duracion_min} min · $${Number(s.precio).toLocaleString('es-CO')} COP</div></div>
+        <div>
+          <button class="btn-peq btn-editar" onclick='editarServicio(${JSON.stringify(s)})'>Editar</button>
+          <button class="btn-peq btn-borrar" onclick="borrarServicio('${s.id}')">Borrar</button>
+        </div>`;
       cont.appendChild(div);
     });
   }
 
-  async function crearServicio() {
-    const nombre = document.getElementById('serv-nombre').value.trim();
-    const duracion = parseInt(document.getElementById('serv-duracion').value);
-    const precio = parseFloat(document.getElementById('serv-precio').value);
-    const msg = document.getElementById('msg-servicio');
-    msg.className = 'mensaje';
+  function editarServicio(s) {
+    $('sv-id').value = s.id; $('sv-nombre').value = s.nombre;
+    $('sv-duracion').value = s.duracion_min; $('sv-precio').value = s.precio;
+    $('titulo-form-servicio').textContent = 'Editar servicio: ' + s.nombre;
+  }
 
-    if (!nombre || !duracion || !precio) {
-      msg.className = 'mensaje error';
-      msg.textContent = 'Completa todos los campos.';
-      return;
-    }
+  async function guardarServicio() {
+    const id = $('sv-id').value;
+    const body = { nombre: $('sv-nombre').value.trim(), duracion_min: parseInt($('sv-duracion').value), precio: parseFloat($('sv-precio').value) };
+    if (!body.nombre || !body.duracion_min || !body.precio) return aviso('msg-servicio', false, 'Completa todos los campos.');
 
-    const res = await insertar('servicio', {
-      barberia_id: BARBERIA_ID, nombre, duracion_min: duracion, precio
-    });
+    const res = id ? await api('PATCH', 'servicio', `id=eq.${id}`, body) : await api('POST', 'servicio', '', { ...body, barberia_id: barberiaId });
 
     if (res.ok) {
-      msg.className = 'mensaje exito';
-      msg.textContent = '✅ Servicio agregado.';
-      document.getElementById('serv-nombre').value = '';
-      document.getElementById('serv-duracion').value = '';
-      document.getElementById('serv-precio').value = '';
+      aviso('msg-servicio', true, '✅ Guardado.');
+      $('sv-id').value = ''; $('sv-nombre').value = ''; $('sv-duracion').value = ''; $('sv-precio').value = '';
+      $('titulo-form-servicio').textContent = 'Agregar servicio';
       cargarServicios();
     } else {
-      msg.className = 'mensaje error';
-      msg.textContent = 'No se pudo crear el servicio.';
+      aviso('msg-servicio', false, 'No se pudo guardar.');
     }
   }
 
-  // ── BARBEROS ──
+  async function borrarServicio(id) {
+    if (!confirm('¿Borrar este servicio?')) return;
+    await api('PATCH', 'servicio', `id=eq.${id}`, { activo: false });
+    cargarServicios();
+  }
+
+  // ─── Barberos ───
   async function cargarBarberos() {
-    const barberos = await consultar('barbero', `barberia_id=eq.${BARBERIA_ID}&activo=eq.true&select=id,nombre,telefono,comision_pct&order=nombre.asc`);
-    const cont = document.getElementById('lista-barberos');
-    cont.innerHTML = '';
+    const barberos = await api('GET', 'barbero', `barberia_id=eq.${barberiaId}&activo=eq.true&select=id,nombre,telefono,comision_pct&order=nombre.asc`);
+    barberosCache = barberos;
+    const cont = $('lista-barberos');
+    cont.innerHTML = barberos.length ? '' : '<div class="vacio">Sin barberos.</div>';
+
+    const selTurnos = $('tn-barbero');
+    selTurnos.innerHTML = barberos.map(b => `<option value="${b.id}">${b.nombre}</option>`).join('');
+
     barberos.forEach(b => {
       const div = document.createElement('div');
       div.className = 'item';
       div.innerHTML = `
-        <div>💈 ${b.nombre}<div class="sub">${b.telefono || 'sin teléfono'}</div></div>
-        <div style="color:#c9a84c">${b.comision_pct || 0}%</div>
-      `;
+        <div><b>💈 ${b.nombre}</b><div class="sub">${b.telefono || 'sin teléfono'} · comisión ${b.comision_pct || 0}%</div></div>
+        <div>
+          <button class="btn-peq btn-editar" onclick='editarBarbero(${JSON.stringify(b)})'>Editar</button>
+          <button class="btn-peq btn-borrar" onclick="borrarBarbero('${b.id}')">Borrar</button>
+        </div>`;
       cont.appendChild(div);
     });
   }
 
-  async function crearBarbero() {
-    const nombre = document.getElementById('barb-nombre').value.trim();
-    const telefono = document.getElementById('barb-telefono').value.trim();
-    const comision = parseFloat(document.getElementById('barb-comision').value);
-    const msg = document.getElementById('msg-barbero');
-    msg.className = 'mensaje';
+  function editarBarbero(b) {
+    $('bb-id').value = b.id; $('bb-nombre').value = b.nombre;
+    $('bb-telefono').value = b.telefono || ''; $('bb-comision').value = b.comision_pct || 0;
+    $('titulo-form-barbero').textContent = 'Editar barbero: ' + b.nombre;
+  }
 
-    if (!nombre) {
-      msg.className = 'mensaje error';
-      msg.textContent = 'El nombre es obligatorio.';
-      return;
-    }
+  async function guardarBarbero() {
+    const id = $('bb-id').value;
+    const body = { nombre: $('bb-nombre').value.trim(), telefono: $('bb-telefono').value.trim(), comision_pct: parseFloat($('bb-comision').value) || 0 };
+    if (!body.nombre) return aviso('msg-barbero', false, 'El nombre es obligatorio.');
 
-    const res = await insertar('barbero', {
-      barberia_id: BARBERIA_ID, nombre, telefono, comision_pct: comision || 0
-    });
+    const res = id ? await api('PATCH', 'barbero', `id=eq.${id}`, body) : await api('POST', 'barbero', '', { ...body, barberia_id: barberiaId });
 
     if (res.ok) {
-      msg.className = 'mensaje exito';
-      msg.textContent = '✅ Barbero agregado.';
-      document.getElementById('barb-nombre').value = '';
-      document.getElementById('barb-telefono').value = '';
-      document.getElementById('barb-comision').value = '';
+      aviso('msg-barbero', true, '✅ Guardado.');
+      $('bb-id').value = ''; $('bb-nombre').value = ''; $('bb-telefono').value = ''; $('bb-comision').value = '';
+      $('titulo-form-barbero').textContent = 'Agregar barbero';
       cargarBarberos();
     } else {
-      msg.className = 'mensaje error';
-      msg.textContent = 'No se pudo crear el barbero.';
+      aviso('msg-barbero', false, 'No se pudo guardar.');
     }
+  }
+
+  async function borrarBarbero(id) {
+    if (!confirm('¿Borrar este barbero? Sus citas históricas se conservan.')) return;
+    await api('PATCH', 'barbero', `id=eq.${id}`, { activo: false });
+    cargarBarberos();
+  }
+
+  // ─── Turnos ───
+  document.addEventListener('click', e => {
+    if (e.target.classList.contains('dia')) e.target.classList.toggle('activo');
+  });
+
+  async function programarTurnos() {
+    const barberoId = $('tn-barbero').value;
+    const desde = $('tn-desde').value, hasta = $('tn-hasta').value;
+    const hini = $('tn-hini').value, hfin = $('tn-hfin').value;
+    const diasActivos = [...document.querySelectorAll('#tn-dias .dia.activo')].map(d => parseInt(d.dataset.dia));
+
+    if (!barberoId || !desde || !hasta || !hini || !hfin) return aviso('msg-turnos', false, 'Completa todos los campos.');
+    if (hasta < desde) return aviso('msg-turnos', false, 'La fecha final debe ser posterior a la inicial.');
+    if (!diasActivos.length) return aviso('msg-turnos', false, 'Selecciona al menos un día de la semana.');
+
+    const filas = [];
+    let d = new Date(desde + 'T12:00:00');
+    const fin = new Date(hasta + 'T12:00:00');
+    while (d <= fin) {
+      if (diasActivos.includes(d.getDay())) {
+        filas.push({ barbero_id: barberoId, fecha: d.toISOString().split('T')[0], hora_inicio: hini, hora_fin: hfin, tipo: 'disponible' });
+      }
+      d.setDate(d.getDate() + 1);
+    }
+
+    if (!filas.length) return aviso('msg-turnos', false, 'No hay días que coincidan con la selección.');
+
+    const res = await api('POST', 'disponibilidad', '', filas);
+    if (res.ok) { aviso('msg-turnos', true, `✅ ${filas.length} turnos creados.`); cargarTurnos(); }
+    else aviso('msg-turnos', false, 'No se pudieron crear los turnos.');
+  }
+
+  async function cargarTurnos() {
+    const hoy = new Date().toISOString().split('T')[0];
+    const limite = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
+    const turnos = await api('GET', 'disponibilidad',
+      `fecha=gte.${hoy}&fecha=lte.${limite}&order=fecha.asc,hora_inicio.asc` +
+      `&select=id,fecha,hora_inicio,hora_fin,tipo,barbero!inner(nombre,barberia_id)&barbero.barberia_id=eq.${barberiaId}`
+    );
+
+    const cont = $('lista-turnos');
+    cont.innerHTML = (Array.isArray(turnos) && turnos.length) ? '' : '<div class="vacio">Sin turnos programados esta semana.</div>';
+
+    (turnos || []).forEach(t => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `<div><b>${t.fecha}</b> · ${t.hora_inicio.slice(0,5)}–${t.hora_fin.slice(0,5)}<div class="sub">💈 ${t.barbero.nombre} · ${t.tipo}</div></div>
+        <button class="btn-peq btn-borrar" onclick="borrarTurno('${t.id}')">Eliminar</button>`;
+      cont.appendChild(div);
+    });
+  }
+
+  async function borrarTurno(id) {
+    if (!confirm('¿Eliminar este turno?')) return;
+    await api('DELETE', 'disponibilidad', `id=eq.${id}`);
+    cargarTurnos();
   }
 </script>
 </body>
