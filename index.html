@@ -157,6 +157,7 @@
     #seccion-horario, #seccion-datos, #seccion-confirmar, #seccion-reserva { display: none; }
     #vista-cargando { text-align: center; color: var(--ink-soft); margin-top: 60px; }
   </style>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
 
@@ -206,6 +207,8 @@
     <input type="text" id="input-nombre" placeholder="Ej: Juan Pérez" />
     <label>Número de WhatsApp</label>
     <input type="tel" id="input-telefono" placeholder="+573001234567" />
+    <label>Correo electrónico (opcional)</label>
+    <input type="email" id="input-email-cliente" placeholder="tu@correo.com" />
   </div>
 
   <div class="tarjeta" id="seccion-confirmar">
@@ -230,6 +233,8 @@
 <script>
   const SUPABASE_URL = 'https://hkcpfkjljgbbdrtwsjbr.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrY3Bma2psamdiYmRydHdzamJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NTQ3MTUsImV4cCI6MjA5ODQzMDcxNX0.0KWTzJ__5A7w1rFu7CoUdjdapGgpGs9dVLc6ZZsLLj4';
+
+  emailjs.init({ publicKey: 'VtL7gWhQTJ8c4FbBW' });
 
   const params = new URLSearchParams(window.location.search);
   const SLUG = params.get('b');
@@ -408,6 +413,7 @@
   async function agendarCita() {
     const nombre = document.getElementById('input-nombre').value.trim();
     const telefono = document.getElementById('input-telefono').value.trim();
+    const emailCliente = document.getElementById('input-email-cliente').value.trim();
     const msg = document.getElementById('mensaje-resultado');
     msg.className = 'mensaje';
 
@@ -422,19 +428,20 @@
       const clienteRes = await fetch(`${SUPABASE_URL}/rest/v1/cliente`, {
         method: 'POST',
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: clienteId, nombre, telefono, canal_preferido: 'whatsapp' })
+        body: JSON.stringify({ id: clienteId, nombre, telefono, email: emailCliente || null, canal_preferido: 'whatsapp' })
       });
       if (!clienteRes.ok) throw new Error('No se pudo registrar el cliente');
 
       const inicio = `${estado.fecha}T${estado.horaInicio}:00-05:00`;
       const fin    = `${estado.fecha}T${estado.horaFin}:00-05:00`;
+      const tokenCita = crypto.randomUUID();
 
       const citaRes = await fetch(`${SUPABASE_URL}/rest/v1/cita`, {
         method: 'POST',
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           barbero_id: estado.barberoId, servicio_id: estado.servicioId, cliente_id: clienteId,
-          inicio, fin, estado: 'confirmada'
+          inicio, fin, estado: 'confirmada', token_cancelacion: tokenCita
         })
       });
 
@@ -446,6 +453,22 @@
         document.getElementById('r-precio').textContent = '$' + Number(estado.servicioPrice).toLocaleString('es-CO');
         document.getElementById('seccion-confirmar').style.display = 'none';
         document.getElementById('recibo').classList.add('visible');
+
+        // Enviar correo de confirmación (solo si el cliente puso su email)
+        if (emailCliente) {
+          emailjs.send('service_6hhn11i', 'template_ioo2z6d', {
+            to_email: emailCliente,
+            cliente_nombre: nombre,
+            barberia_nombre: document.getElementById('titulo-barberia').textContent,
+            barbero_nombre: estado.barberoNombre,
+            servicio_nombre: estado.servicioNombre,
+            fecha: estado.fecha,
+            hora: estado.horaInicio,
+            precio: '$' + Number(estado.servicioPrice).toLocaleString('es-CO') + ' COP',
+            link_cancelar: `https://danielrom3ro1.github.io/barberia-saas/cancelar.html?token=${tokenCita}`,
+            link_reprogramar: `https://danielrom3ro1.github.io/barberia-saas/reprogramar.html?token=${tokenCita}`
+          }).catch(err => console.error('Error enviando email:', err));
+        }
       } else {
         const err = await citaRes.json();
         msg.className = 'mensaje error';
