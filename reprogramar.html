@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reprogramar cita</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #eef0f2; --surface: #ffffff; --ink: #171a21; --ink-soft: #5b6270;
+      --accent: #b8402f; --accent-2: #3d5a74; --line: #dadfe3; --accent-ink: #fff8f4;
+      --exito: #2f7d52; --exito-bg: #e7f4ec;
+      --err: #b8402f; --err-bg: #fbeae7;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #14161c; --surface: #1d2028; --ink: #eceae3; --ink-soft: #9aa0ac;
+        --accent: #d35a44; --accent-2: #6f93b3; --line: #2b2f39; --accent-ink: #14161c;
+        --exito: #5cb37f; --exito-bg: #16241c;
+        --err: #d35a44; --err-bg: #2a1a17;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #14161c; --surface: #1d2028; --ink: #eceae3; --ink-soft: #9aa0ac;
+      --accent: #d35a44; --accent-2: #6f93b3; --line: #2b2f39; --accent-ink: #14161c;
+      --exito: #5cb37f; --exito-bg: #16241c;
+      --err: #d35a44; --err-bg: #2a1a17;
+    }
+    :root[data-theme="light"] {
+      --bg: #eef0f2; --surface: #ffffff; --ink: #171a21; --ink-soft: #5b6270;
+      --accent: #b8402f; --accent-2: #3d5a74; --line: #dadfe3; --accent-ink: #fff8f4;
+      --exito: #2f7d52; --exito-bg: #e7f4ec;
+      --err: #b8402f; --err-bg: #fbeae7;
+    }
+
+    body {
+      background: var(--bg); color: var(--ink);
+      font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+      min-height: 100vh;
+    }
+
+    .franja-poste {
+      height: 12px;
+      background: repeating-linear-gradient(45deg,
+        var(--accent) 0 14px, var(--surface) 14px 28px,
+        var(--accent-2) 28px 42px, var(--surface) 42px 56px);
+      background-size: 200% 100%;
+    }
+    @media (prefers-reduced-motion: no-preference) { .franja-poste { animation: girar 7s linear infinite; } }
+    @keyframes girar { from { background-position: 0 0; } to { background-position: -56px 0; } }
+
+    .contenedor { max-width: 520px; margin: 0 auto; padding: 36px 18px 80px; }
+
+    .encabezado { text-align: center; margin-bottom: 24px; }
+    .encabezado .marca { font-family: Georgia, "Times New Roman", serif; font-weight: 700; font-size: 1.8rem; }
+    .encabezado .lema { color: var(--ink-soft); font-size: 0.9rem; margin-top: 4px; }
+
+    .tarjeta { background: var(--surface); border-radius: 16px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .tarjeta h2 { font-family: "Bahnschrift", "Arial Narrow", sans-serif; font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); margin-bottom: 12px; }
+
+    .actual { font-size: 0.95rem; line-height: 1.9; }
+    .actual b { color: var(--accent); }
+
+    label { display: block; font-size: 0.82rem; color: var(--ink-soft); margin: 12px 0 5px; font-weight: 600; }
+    input { width: 100%; padding: 11px 13px; border-radius: 9px; border: 1.5px solid var(--line); background: var(--bg); color: var(--ink); font-size: 0.95rem; }
+    input:focus { outline: 2px solid var(--accent-2); outline-offset: 1px; border-color: transparent; }
+
+    .slots { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+    .slot { padding: 8px 14px; border-radius: 8px; border: 1.5px solid var(--line); font-family: "Bahnschrift", "Arial Narrow", sans-serif; font-variant-numeric: tabular-nums; font-size: 0.85rem; cursor: pointer; }
+    .slot:hover { border-color: var(--accent-2); }
+    .slot.seleccionado { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+    .slot.ocupado { opacity: 0.35; text-decoration: line-through; cursor: not-allowed; }
+
+    .btn { width: 100%; padding: 14px; margin-top: 18px; background: var(--accent); color: var(--accent-ink); border: none; border-radius: 10px; font-family: "Bahnschrift", "Arial Narrow", sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; }
+    .btn:hover { filter: brightness(1.08); }
+    .btn:disabled { background: var(--line); color: var(--ink-soft); cursor: not-allowed; }
+
+    .mensaje { text-align: center; padding: 14px; border-radius: 10px; margin-top: 14px; display: none; font-size: 0.9rem; }
+    .mensaje.exito { background: var(--exito-bg); color: var(--exito); display: block; }
+    .mensaje.error { background: var(--err-bg); color: var(--err); display: block; }
+
+    .spinner { text-align: center; color: var(--ink-soft); margin: 8px 0; font-size: 0.85rem; }
+    #seccion-form, #confirmar-box { display: none; }
+  </style>
+</head>
+<body>
+
+<div class="franja-poste"></div>
+
+<div class="contenedor">
+  <div class="encabezado">
+    <div class="marca">💈 Reprogramar cita</div>
+    <div class="lema">Elige un nuevo día y hora</div>
+  </div>
+
+  <div class="tarjeta" id="tarjeta-actual">
+    <h2>Tu cita actual</h2>
+    <div class="spinner" id="spinner-actual">Cargando información...</div>
+    <div class="actual" id="info-actual" style="display:none"></div>
+  </div>
+
+  <div class="tarjeta" id="seccion-form">
+    <h2>Nuevo horario</h2>
+    <label>Fecha</label>
+    <input type="date" id="input-fecha" min="" />
+    <label>Horarios disponibles</label>
+    <div class="spinner" id="spinner-slots" style="display:none">Cargando horarios...</div>
+    <div class="slots" id="lista-slots"></div>
+    <button class="btn" id="btn-confirmar" onclick="confirmarReprogramacion()" disabled>Confirmar nuevo horario</button>
+    <div class="mensaje" id="mensaje-resultado"></div>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://hkcpfkjljgbbdrtwsjbr.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrY3Bma2psamdiYmRydHdzamJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NTQ3MTUsImV4cCI6MjA5ODQzMDcxNX0.0KWTzJ__5A7w1rFu7CoUdjdapGgpGs9dVLc6ZZsLLj4';
+  const FUNC_URL = `${SUPABASE_URL}/functions/v1/reprogramar-cita`;
+
+  const token = new URLSearchParams(window.location.search).get('token');
+  let horaElegida = null;
+
+  async function llamar(params) {
+    const res = await fetch(`${FUNC_URL}?token=${encodeURIComponent(token)}${params}`, {
+      headers: { 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    return { ok: res.ok, data: await res.json() };
+  }
+
+  async function iniciar() {
+    if (!token) {
+      document.getElementById('spinner-actual').textContent = 'Link inválido: falta el token.';
+      return;
+    }
+
+    const { ok, data } = await llamar('');
+    document.getElementById('spinner-actual').style.display = 'none';
+
+    if (!ok) {
+      document.getElementById('info-actual').style.display = 'block';
+      document.getElementById('info-actual').innerHTML = `<span style="color:var(--err)">${data.error}</span>`;
+      return;
+    }
+
+    const inicio = new Date(data.inicio_actual);
+    const fechaTexto = inicio.toLocaleDateString('es-CO', { timeZone: 'America/Bogota', weekday: 'long', day: 'numeric', month: 'long' });
+    const horaTexto = inicio.toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' });
+
+    document.getElementById('info-actual').style.display = 'block';
+    document.getElementById('info-actual').innerHTML = `
+      💈 <b>Barbero:</b> ${data.barbero_nombre}<br>
+      ✂️ <b>Servicio:</b> ${data.servicio_nombre}<br>
+      📅 <b>Fecha actual:</b> ${fechaTexto}<br>
+      🕐 <b>Hora actual:</b> ${horaTexto}
+    `;
+
+    document.getElementById('seccion-form').style.display = 'block';
+    const hoy = new Date().toISOString().split('T')[0];
+    document.getElementById('input-fecha').min = hoy;
+    document.getElementById('input-fecha').onchange = cargarSlots;
+  }
+
+  async function cargarSlots() {
+    const fecha = document.getElementById('input-fecha').value;
+    if (!fecha) return;
+    horaElegida = null;
+    document.getElementById('btn-confirmar').disabled = true;
+
+    document.getElementById('spinner-slots').style.display = 'block';
+    const cont = document.getElementById('lista-slots');
+    cont.innerHTML = '';
+
+    const { ok, data } = await llamar(`&fecha=${fecha}`);
+    document.getElementById('spinner-slots').style.display = 'none';
+
+    if (!ok || !data.slots || !data.slots.length) {
+      cont.innerHTML = '<p style="color:var(--ink-soft);font-size:0.85rem">No hay disponibilidad para esta fecha.</p>';
+      return;
+    }
+
+    data.slots.forEach(s => {
+      const div = document.createElement('div');
+      div.className = 'slot' + (s.ocupado ? ' ocupado' : '');
+      div.textContent = s.hora;
+      if (!s.ocupado) {
+        div.onclick = () => {
+          document.querySelectorAll('.slot').forEach(e => e.classList.remove('seleccionado'));
+          div.classList.add('seleccionado');
+          horaElegida = s.hora;
+          document.getElementById('btn-confirmar').disabled = false;
+        };
+      }
+      cont.appendChild(div);
+    });
+  }
+
+  async function confirmarReprogramacion() {
+    const fecha = document.getElementById('input-fecha').value;
+    const msg = document.getElementById('mensaje-resultado');
+    msg.className = 'mensaje';
+
+    if (!fecha || !horaElegida) return;
+
+    const btn = document.getElementById('btn-confirmar');
+    btn.disabled = true;
+    btn.textContent = 'Reprogramando...';
+
+    try {
+      const res = await fetch(`${FUNC_URL}?token=${encodeURIComponent(token)}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fecha, hora_inicio: horaElegida })
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        msg.className = 'mensaje exito';
+        msg.textContent = '✅ ' + data.mensaje;
+        btn.textContent = 'Cita reprogramada';
+        document.getElementById('lista-slots').style.display = 'none';
+      } else {
+        msg.className = 'mensaje error';
+        msg.textContent = data.error;
+        btn.disabled = false;
+        btn.textContent = 'Confirmar nuevo horario';
+      }
+    } catch (e) {
+      msg.className = 'mensaje error';
+      msg.textContent = 'Error de conexión. Intenta de nuevo.';
+      btn.disabled = false;
+      btn.textContent = 'Confirmar nuevo horario';
+    }
+  }
+
+  iniciar();
+</script>
+</body>
+</html>
