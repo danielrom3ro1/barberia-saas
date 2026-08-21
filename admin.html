@@ -6,55 +6,103 @@
   <title>Panel Admin</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f5f6f8;
-      color: #1a1a2e;
-      min-height: 100vh;
-      font-size: 17px;
+
+    :root {
+      --bg: #eef0f2; --surface: #ffffff; --ink: #171a21; --ink-soft: #5b6270;
+      --accent: #b8402f; --accent-2: #3d5a74; --line: #dadfe3; --accent-ink: #fff8f4;
+      --exito: #2f7d52; --exito-bg: #e7f4ec;
+      --err: #b8402f; --err-bg: #fbeae7;
     }
-    .top { background: #1a1a2e; color: #fff; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; }
-    .top h1 { font-size: 1.3rem; color: #e0bc6a; }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #14161c; --surface: #1d2028; --ink: #eceae3; --ink-soft: #9aa0ac;
+        --accent: #d35a44; --accent-2: #6f93b3; --line: #2b2f39; --accent-ink: #14161c;
+        --exito: #5cb37f; --exito-bg: #16241c;
+        --err: #d35a44; --err-bg: #2a1a17;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #14161c; --surface: #1d2028; --ink: #eceae3; --ink-soft: #9aa0ac;
+      --accent: #d35a44; --accent-2: #6f93b3; --line: #2b2f39; --accent-ink: #14161c;
+      --exito: #5cb37f; --exito-bg: #16241c;
+      --err: #d35a44; --err-bg: #2a1a17;
+    }
+    :root[data-theme="light"] {
+      --bg: #eef0f2; --surface: #ffffff; --ink: #171a21; --ink-soft: #5b6270;
+      --accent: #b8402f; --accent-2: #3d5a74; --line: #dadfe3; --accent-ink: #fff8f4;
+      --exito: #2f7d52; --exito-bg: #e7f4ec;
+      --err: #b8402f; --err-bg: #fbeae7;
+    }
+
+    body {
+      font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+      background: var(--bg); color: var(--ink);
+      min-height: 100vh; font-size: 17px;
+    }
+
+    .franja-poste {
+      height: 10px;
+      background: repeating-linear-gradient(45deg,
+        var(--accent) 0 14px, var(--surface) 14px 28px,
+        var(--accent-2) 28px 42px, var(--surface) 42px 56px);
+      background-size: 200% 100%;
+    }
+    @media (prefers-reduced-motion: no-preference) { .franja-poste { animation: girar 7s linear infinite; } }
+    @keyframes girar { from { background-position: 0 0; } to { background-position: -56px 0; } }
+
+    .top {
+      background: var(--surface); color: var(--ink); border-bottom: 1px solid var(--line);
+      padding: 16px 24px; display: flex; justify-content: space-between; align-items: center;
+    }
+    .top h1 { font-family: Georgia, serif; font-weight: 700; font-size: 1.3rem; }
+
     .contenedor { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
     .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-    .tab { padding: 12px 22px; border-radius: 10px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 1rem; font-weight: 600; color: #555; }
-    .tab.activa { background: #1a1a2e; color: #e0bc6a; border-color: #1a1a2e; }
+    .tab {
+      padding: 12px 22px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--surface);
+      cursor: pointer; font-family: "Bahnschrift", "Arial Narrow", sans-serif; font-size: 0.95rem;
+      font-weight: 600; color: var(--ink-soft); letter-spacing: 0.02em;
+    }
+    .tab.activa { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
     .panel { display: none; }
     .panel.activa { display: block; }
-    .card { background: #fff; border-radius: 14px; padding: 26px; margin-bottom: 18px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
-    .card h2 { font-size: 1.15rem; margin-bottom: 18px; color: #1a1a2e; }
-    label { display: block; font-size: 0.95rem; color: #555; margin: 14px 0 5px; font-weight: 600; }
+    .card { background: var(--surface); border-radius: 16px; padding: 26px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .card h2 { font-family: Georgia, serif; font-size: 1.15rem; margin-bottom: 18px; color: var(--ink); }
+    label { display: block; font-size: 0.92rem; color: var(--ink-soft); margin: 14px 0 5px; font-weight: 600; }
     input, select {
-      width: 100%; padding: 12px 15px; border-radius: 10px; border: 1px solid #ccc;
-      font-size: 1rem; background: #fff; color: #1a1a2e;
+      width: 100%; padding: 12px 15px; border-radius: 10px; border: 1.5px solid var(--line);
+      font-size: 1rem; background: var(--bg); color: var(--ink);
     }
-    input:focus, select:focus { outline: none; border-color: #c9a84c; }
-    .btn { padding: 13px 24px; background: #1a1a2e; color: #e0bc6a; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 18px; }
-    .btn:hover { opacity: 0.9; }
-    .btn-peq { padding: 8px 14px; font-size: 0.85rem; margin: 0; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
-    .btn-editar { background: #eef2ff; color: #3b4bd8; }
-    .btn-borrar { background: #ffecec; color: #d9534f; margin-left: 6px; }
-    .item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #eee; gap: 10px; flex-wrap: wrap; }
+    input:focus, select:focus { outline: 2px solid var(--accent-2); outline-offset: 1px; border-color: transparent; }
+    .btn {
+      padding: 13px 24px; background: var(--accent); color: var(--accent-ink); border: none; border-radius: 10px;
+      font-family: "Bahnschrift", "Arial Narrow", sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 18px;
+    }
+    .btn:hover { filter: brightness(1.08); }
+    .btn-peq { padding: 8px 14px; font-size: 0.85rem; margin: 0; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-family: "Bahnschrift", "Arial Narrow", sans-serif; }
+    .btn-editar { background: color-mix(in srgb, var(--accent-2) 16%, var(--surface)); color: var(--accent-2); }
+    .btn-borrar { background: var(--err-bg); color: var(--err); margin-left: 6px; }
+    .item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); gap: 10px; flex-wrap: wrap; }
     .item:last-child { border-bottom: none; }
-    .item .sub { color: #888; font-size: 0.85rem; margin-top: 2px; }
+    .item .sub { color: var(--ink-soft); font-size: 0.85rem; margin-top: 2px; font-family: "Bahnschrift", "Arial Narrow", sans-serif; font-variant-numeric: tabular-nums; }
     .fila { display: flex; gap: 12px; flex-wrap: wrap; }
     .fila > div { flex: 1; min-width: 120px; }
     .mensaje { padding: 13px; border-radius: 10px; margin-top: 14px; display: none; text-align: center; }
-    .exito { background: #e6f7ee; color: #1a7f4e; display: block; }
-    .error { background: #fdecec; color: #c0392b; display: block; }
-    .vacio { color: #999; text-align: center; padding: 18px; }
+    .exito { background: var(--exito-bg); color: var(--exito); display: block; }
+    .error { background: var(--err-bg); color: var(--err); display: block; }
+    .vacio { color: var(--ink-soft); text-align: center; padding: 18px; }
     #vista-panel { display: none; }
-    .badge { font-size: 0.75rem; padding: 3px 10px; border-radius: 20px; font-weight: 700; }
     .login-caja { max-width: 420px; margin: 60px auto; }
     .dias { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
-    .dia { padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; cursor: pointer; font-size: 0.85rem; font-weight: 600; user-select: none; }
-    .dia.activo { background: #1a1a2e; color: #e0bc6a; border-color: #1a1a2e; }
+    .dia { padding: 8px 12px; border-radius: 8px; border: 1.5px solid var(--line); cursor: pointer; font-size: 0.85rem; font-weight: 600; user-select: none; font-family: "Bahnschrift", "Arial Narrow", sans-serif; }
+    .dia.activo { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
   </style>
 </head>
 <body>
 
+<div class="franja-poste"></div>
 <div class="top">
-  <h1 id="titulo-top">👑 Panel Admin</h1>
+  <h1 id="titulo-top">Panel Admin</h1>
   <button class="btn-peq btn-borrar" id="btn-salir" style="display:none" onclick="cerrarSesion()">Salir</button>
 </div>
 
@@ -70,14 +118,13 @@
 
 <div class="contenedor" id="vista-panel">
   <div class="tabs">
-    <button class="tab activa" onclick="verTab('metricas', this)">📊 Métricas</button>
-    <button class="tab" onclick="verTab('citas', this)">📅 Citas</button>
-    <button class="tab" onclick="verTab('servicios', this)">✂️ Servicios</button>
-    <button class="tab" onclick="verTab('barberos', this)">💈 Barberos</button>
-    <button class="tab" onclick="verTab('turnos', this)">🕐 Turnos</button>
+    <button class="tab activa" onclick="verTab('metricas', this)">Métricas</button>
+    <button class="tab" onclick="verTab('citas', this)">Citas</button>
+    <button class="tab" onclick="verTab('servicios', this)">Servicios</button>
+    <button class="tab" onclick="verTab('barberos', this)">Barberos</button>
+    <button class="tab" onclick="verTab('turnos', this)">Turnos</button>
   </div>
 
-  <!-- MÉTRICAS -->
   <div class="panel activa" id="panel-metricas">
     <div class="card">
       <h2>Métricas del período</h2>
@@ -89,7 +136,6 @@
     </div>
   </div>
 
-  <!-- CITAS -->
   <div class="panel" id="panel-citas">
     <div class="card">
       <h2>Citas de todos tus barberos</h2>
@@ -114,12 +160,8 @@
     </div>
   </div>
 
-  <!-- SERVICIOS -->
   <div class="panel" id="panel-servicios">
-    <div class="card">
-      <h2>Servicios</h2>
-      <div id="lista-servicios"></div>
-    </div>
+    <div class="card"><h2>Servicios</h2><div id="lista-servicios"></div></div>
     <div class="card">
       <h2 id="titulo-form-servicio">Agregar servicio</h2>
       <input type="hidden" id="sv-id" />
@@ -134,12 +176,8 @@
     </div>
   </div>
 
-  <!-- BARBEROS -->
   <div class="panel" id="panel-barberos">
-    <div class="card">
-      <h2>Barberos</h2>
-      <div id="lista-barberos"></div>
-    </div>
+    <div class="card"><h2>Barberos</h2><div id="lista-barberos"></div></div>
     <div class="card">
       <h2 id="titulo-form-barbero">Agregar barbero</h2>
       <input type="hidden" id="bb-id" />
@@ -154,7 +192,6 @@
     </div>
   </div>
 
-  <!-- TURNOS -->
   <div class="panel" id="panel-turnos">
     <div class="card">
       <h2>Programar disponibilidad</h2>
@@ -181,16 +218,13 @@
       <button class="btn" onclick="programarTurnos()">Crear turnos</button>
       <div class="mensaje" id="msg-turnos"></div>
     </div>
-    <div class="card">
-      <h2>Turnos próximos (7 días)</h2>
-      <div id="lista-turnos"></div>
-    </div>
+    <div class="card"><h2>Turnos próximos (7 días)</h2><div id="lista-turnos"></div></div>
   </div>
 </div>
 
 <script>
   const SUPABASE_URL = 'https://hkcpfkjljgbbdrtwsjbr.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrY3Bma2psamdiYmRydHdzamJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NTQ3MTUsImV4cCI6MjA5ODQzMDcxNX0.0KWTzJ__5A7w1rFu7CoUdjdapGgpGs9dVLc6ZZsLLj4';
+  const SUPABASE_KEY = 'PEGA_AQUI_TU_ANON_KEY_FRESCA_DE_SUPABASE';
 
   let accessToken = null;
   let barberiaId = null;
@@ -218,7 +252,6 @@
     setTimeout(() => { el.className = 'mensaje'; }, 4000);
   }
 
-  // Convierte un timestamp ISO a fecha/hora local de Bogotá para prellenar formularios
   function aFechaHoraLocal(iso) {
     const d = new Date(iso);
     const fecha = d.toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
@@ -226,7 +259,6 @@
     return { fecha, hora };
   }
 
-  // ─── Login ───
   async function iniciarSesion() {
     const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
       method: 'POST',
@@ -245,7 +277,7 @@
     barberiaId = perfil[0].barberia_id;
 
     const barberia = await api('GET', 'barberia', `id=eq.${barberiaId}&select=nombre`);
-    $('titulo-top').textContent = '👑 ' + (barberia[0]?.nombre || 'Panel Admin');
+    $('titulo-top').textContent = barberia[0]?.nombre || 'Panel Admin';
 
     $('vista-login').style.display = 'none';
     $('vista-panel').style.display = 'block';
@@ -280,7 +312,6 @@
     $('panel-' + nombre).classList.add('activa');
   }
 
-  // ─── Métricas ───
   async function cargarMetricas() {
     const desde = $('met-desde').value, hasta = $('met-hasta').value;
     if (!desde || !hasta) return;
@@ -305,18 +336,17 @@
     Object.entries(porBarbero).forEach(([nombre, m]) => {
       const div = document.createElement('div');
       div.className = 'item';
-      div.innerHTML = `<div><b>💈 ${nombre}</b><div class="sub">${m.citas} citas · comisión ${m.comision}%</div></div><div style="color:#c9a84c;font-weight:700">$${m.ingresos.toLocaleString('es-CO')}</div>`;
+      div.innerHTML = `<div><b>💈 ${nombre}</b><div class="sub">${m.citas} citas · comisión ${m.comision}%</div></div><div style="color:var(--accent);font-weight:700; font-family:'Bahnschrift','Arial Narrow',sans-serif">$${m.ingresos.toLocaleString('es-CO')}</div>`;
       cont.appendChild(div);
     });
 
     const divTotal = document.createElement('div');
     divTotal.className = 'item';
-    divTotal.style.borderTop = '2px solid #1a1a2e';
-    divTotal.innerHTML = `<div><b>TOTAL</b></div><div style="color:#1a1a2e;font-weight:700">$${total.toLocaleString('es-CO')} COP</div>`;
+    divTotal.style.borderTop = '2px solid var(--ink)';
+    divTotal.innerHTML = `<div><b>TOTAL</b></div><div style="color:var(--ink);font-weight:700; font-family:'Bahnschrift','Arial Narrow',sans-serif">$${total.toLocaleString('es-CO')} COP</div>`;
     cont.appendChild(divTotal);
   }
 
-  // ─── Citas: ver, editar, cancelar ───
   async function cargarCitas() {
     const fecha = $('filtro-fecha').value;
     const citas = await api('GET', 'cita',
@@ -336,7 +366,7 @@
         <button class="btn-peq btn-editar" onclick='editarCita(${JSON.stringify(c)})'>Editar</button>
         <button class="btn-peq btn-borrar" onclick="cancelarCitaAdmin('${c.token_cancelacion}')">Cancelar</button>`;
       div.innerHTML = `
-        <div><b>${hora}</b> — 💈 ${c.barbero?.nombre || ''}<div class="sub">👤 ${c.cliente?.nombre || ''} · ✂️ ${c.servicio?.nombre || ''} · ${c.estado}</div></div>
+        <div><b>${hora}</b> — 💈 ${c.barbero?.nombre || ''}<div class="sub">${c.cliente?.nombre || ''} · ${c.servicio?.nombre || ''} · ${c.estado}</div></div>
         <div>${botones}</div>`;
       cont.appendChild(div);
     });
@@ -357,9 +387,7 @@
     $('card-editar-cita').scrollIntoView({ behavior: 'smooth' });
   }
 
-  function cancelarEdicionCita() {
-    $('card-editar-cita').style.display = 'none';
-  }
+  function cancelarEdicionCita() { $('card-editar-cita').style.display = 'none'; }
 
   async function guardarEdicionCita() {
     const id = $('ec-id').value;
@@ -376,10 +404,8 @@
     const horaFin = `${String(Math.floor(finMin/60)).padStart(2,'0')}:${String(finMin%60).padStart(2,'0')}`;
 
     const res = await api('PATCH', 'cita', `id=eq.${id}`, {
-      barbero_id: barberoId,
-      servicio_id: servicioId,
-      inicio: `${fecha}T${hora}:00-05:00`,
-      fin: `${fecha}T${horaFin}:00-05:00`
+      barbero_id: barberoId, servicio_id: servicioId,
+      inicio: `${fecha}T${hora}:00-05:00`, fin: `${fecha}T${horaFin}:00-05:00`
     });
 
     if (res.ok) {
@@ -395,14 +421,11 @@
   async function cancelarCitaAdmin(token) {
     if (!confirm('¿Cancelar esta cita? Se notificará al barbero por WhatsApp.')) return;
     const res = await fetch(`${SUPABASE_URL}/functions/v1/cancelar-cita?token=${encodeURIComponent(token)}`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${SUPABASE_KEY}` }
+      method: 'POST', headers: { 'Authorization': `Bearer ${SUPABASE_KEY}` }
     });
-    if (res.ok) cargarCitas();
-    else alert('No se pudo cancelar la cita.');
+    if (res.ok) cargarCitas(); else alert('No se pudo cancelar la cita.');
   }
 
-  // ─── Servicios ───
   async function cargarServicios() {
     const servicios = await api('GET', 'servicio', `barberia_id=eq.${barberiaId}&activo=eq.true&select=id,nombre,duracion_min,precio&order=nombre.asc`);
     serviciosCache = servicios;
@@ -450,7 +473,6 @@
     cargarServicios();
   }
 
-  // ─── Barberos ───
   async function cargarBarberos() {
     const barberos = await api('GET', 'barbero', `barberia_id=eq.${barberiaId}&activo=eq.true&select=id,nombre,telefono,comision_pct&order=nombre.asc`);
     barberosCache = barberos;
@@ -502,7 +524,6 @@
     cargarBarberos();
   }
 
-  // ─── Turnos ───
   document.addEventListener('click', e => {
     if (e.target.classList.contains('dia')) e.target.classList.toggle('activo');
   });
