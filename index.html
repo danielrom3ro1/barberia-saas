@@ -6,106 +6,230 @@
   <title>Agenda tu cita</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #eef0f2; --surface: #ffffff; --ink: #171a21; --ink-soft: #5b6270;
+      --accent: #b8402f; --accent-2: #3d5a74; --line: #dadfe3; --accent-ink: #fff8f4;
+      --exito: #2f7d52; --exito-bg: #e7f4ec;
+      --err: #b8402f; --err-bg: #fbeae7;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #14161c; --surface: #1d2028; --ink: #eceae3; --ink-soft: #9aa0ac;
+        --accent: #d35a44; --accent-2: #6f93b3; --line: #2b2f39; --accent-ink: #14161c;
+        --exito: #5cb37f; --exito-bg: #16241c;
+        --err: #d35a44; --err-bg: #2a1a17;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #14161c; --surface: #1d2028; --ink: #eceae3; --ink-soft: #9aa0ac;
+      --accent: #d35a44; --accent-2: #6f93b3; --line: #2b2f39; --accent-ink: #14161c;
+      --exito: #5cb37f; --exito-bg: #16241c;
+      --err: #d35a44; --err-bg: #2a1a17;
+    }
+    :root[data-theme="light"] {
+      --bg: #eef0f2; --surface: #ffffff; --ink: #171a21; --ink-soft: #5b6270;
+      --accent: #b8402f; --accent-2: #3d5a74; --line: #dadfe3; --accent-ink: #fff8f4;
+      --exito: #2f7d52; --exito-bg: #e7f4ec;
+      --err: #b8402f; --err-bg: #fbeae7;
+    }
+
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #0f0f0f;
-      color: #f0f0f0;
+      background: var(--bg); color: var(--ink);
+      font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px 16px;
     }
-    h1 { font-size: 2rem; margin-bottom: 4px; color: #c9a84c; }
-    .subtitulo { color: #888; margin-bottom: 32px; font-size: 0.95rem; }
-    .card {
-      background: #1a1a1a;
-      border-radius: 12px;
-      padding: 28px;
-      width: 100%;
-      max-width: 480px;
-      margin-bottom: 16px;
+
+    .franja-poste {
+      height: 12px;
+      background: repeating-linear-gradient(45deg,
+        var(--accent) 0 14px, var(--surface) 14px 28px,
+        var(--accent-2) 28px 42px, var(--surface) 42px 56px);
+      background-size: 200% 100%;
     }
-    .card h2 { font-size: 1rem; color: #c9a84c; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
-    label { display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 4px; margin-top: 12px; }
-    input, select {
-      width: 100%;
-      padding: 10px 14px;
-      border-radius: 8px;
-      border: 1px solid #333;
-      background: #111;
-      color: #f0f0f0;
-      font-size: 0.95rem;
+    @media (prefers-reduced-motion: no-preference) {
+      .franja-poste { animation: girar 7s linear infinite; }
     }
-    input:focus, select:focus { outline: none; border-color: #c9a84c; }
-    .opciones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
-    .opcion { border: 1px solid #333; border-radius: 8px; padding: 12px; cursor: pointer; transition: all 0.2s; text-align: center; }
-    .opcion:hover { border-color: #c9a84c; }
-    .opcion.seleccionado { border-color: #c9a84c; background: #2a2010; }
-    .opcion .nombre { font-size: 0.9rem; font-weight: 600; }
-    .opcion .detalle { font-size: 0.78rem; color: #888; margin-top: 4px; }
+    @keyframes girar { from { background-position: 0 0; } to { background-position: -56px 0; } }
+
+    .contenedor { max-width: 560px; margin: 0 auto; padding: 36px 18px 80px; }
+
+    .encabezado { text-align: center; margin-bottom: 30px; }
+    .encabezado .marca {
+      font-family: Georgia, "Times New Roman", serif; font-weight: 700;
+      font-size: 2rem; letter-spacing: -0.01em; text-wrap: balance;
+    }
+    .encabezado .lema { color: var(--ink-soft); font-size: 0.95rem; margin-top: 4px; }
+
+    .pasos { display: flex; justify-content: space-between; margin: 28px 0 32px; position: relative; }
+    .pasos::before {
+      content: ""; position: absolute; top: 15px; left: 24px; right: 24px;
+      height: 2px; background: var(--line); z-index: 0;
+    }
+    .paso {
+      position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;
+      font-family: "Bahnschrift", "Arial Narrow", sans-serif; font-size: 0.68rem;
+      color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.03em;
+    }
+    .paso .num {
+      width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--line);
+      background: var(--bg); display: flex; align-items: center; justify-content: center;
+      font-family: Georgia, serif; font-weight: 700; font-size: 0.95rem;
+      color: var(--ink-soft); transition: all 0.2s ease;
+    }
+    .paso.hecho .num { border-color: var(--accent); color: var(--accent-ink); background: var(--accent); }
+    .paso.hecho span:last-child { color: var(--ink); }
+
+    .tarjeta {
+      background: var(--surface); border-radius: 16px; padding: 24px;
+      margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); position: relative;
+    }
+    .sello {
+      position: absolute; top: -14px; left: 20px; width: 40px; height: 40px; border-radius: 50%;
+      border: 2px solid var(--accent); color: var(--accent); background: var(--surface);
+      display: flex; align-items: center; justify-content: center;
+      font-family: Georgia, serif; font-weight: 700; font-size: 1.05rem; transform: rotate(-7deg);
+    }
+    .tarjeta h2 {
+      font-family: "Bahnschrift", "Arial Narrow", sans-serif; font-size: 0.76rem;
+      text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft);
+      margin: 6px 0 16px 34px;
+    }
+
+    label { display: block; font-size: 0.82rem; color: var(--ink-soft); margin: 12px 0 5px; font-weight: 600; }
+    input {
+      width: 100%; padding: 11px 13px; border-radius: 9px; border: 1.5px solid var(--line);
+      background: var(--bg); color: var(--ink); font-size: 0.95rem;
+    }
+    input:focus { outline: 2px solid var(--accent-2); outline-offset: 1px; border-color: transparent; }
+
+    .opciones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .opcion {
+      border: 1.5px solid var(--line); border-radius: 10px; padding: 13px; cursor: pointer; text-align: left;
+    }
+    .opcion:hover { border-color: var(--accent-2); }
+    .opcion.seleccionado { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+    .opcion .nombre { font-weight: 700; font-size: 0.95rem; }
+    .opcion .detalle {
+      font-family: "Bahnschrift", "Arial Narrow", sans-serif; font-variant-numeric: tabular-nums;
+      color: var(--ink-soft); font-size: 0.78rem; margin-top: 3px;
+    }
+
     .slots { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
-    .slot { padding: 8px 14px; border-radius: 8px; border: 1px solid #333; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
-    .slot:hover { border-color: #c9a84c; }
-    .slot.seleccionado { border-color: #c9a84c; background: #2a2010; color: #c9a84c; }
-    .slot.ocupado { opacity: 0.3; cursor: not-allowed; border-color: #222; }
-    .btn { width: 100%; padding: 14px; background: #c9a84c; color: #000; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 8px; transition: background 0.2s; }
-    .btn:hover { background: #e0bc6a; }
-    .btn:disabled { background: #444; color: #666; cursor: not-allowed; }
-    .mensaje { text-align: center; padding: 16px; border-radius: 8px; margin-top: 8px; display: none; }
-    .mensaje.exito { background: #0d2b1a; color: #4caf7d; border: 1px solid #4caf7d; display: block; }
-    .mensaje.error { background: #2b0d0d; color: #f44; border: 1px solid #f44; display: block; }
+    .slot {
+      padding: 8px 14px; border-radius: 8px; border: 1.5px solid var(--line);
+      font-family: "Bahnschrift", "Arial Narrow", sans-serif; font-variant-numeric: tabular-nums;
+      font-size: 0.85rem; cursor: pointer;
+    }
+    .slot:hover { border-color: var(--accent-2); }
+    .slot.seleccionado { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+    .slot.ocupado { opacity: 0.35; text-decoration: line-through; cursor: not-allowed; }
+
+    .btn {
+      width: 100%; padding: 14px; margin-top: 18px; background: var(--accent); color: var(--accent-ink);
+      border: none; border-radius: 10px; font-family: "Bahnschrift", "Arial Narrow", sans-serif;
+      font-size: 0.95rem; font-weight: 700; letter-spacing: 0.02em; cursor: pointer; transition: filter 0.15s;
+    }
+    .btn:hover { filter: brightness(1.08); }
+    .btn:disabled { background: var(--line); color: var(--ink-soft); cursor: not-allowed; }
+
+    .mensaje { text-align: center; padding: 14px; border-radius: 10px; margin-top: 14px; display: none; font-size: 0.9rem; }
+    .mensaje.exito { background: var(--exito-bg); color: var(--exito); display: block; }
+    .mensaje.error { background: var(--err-bg); color: var(--err); display: block; }
+
+    .recibo {
+      background: var(--surface); border-radius: 4px 4px 16px 16px; padding: 26px 24px 22px;
+      position: relative; display: none; font-family: "Bahnschrift", "Arial Narrow", sans-serif;
+    }
+    .recibo.visible { display: block; }
+    .recibo::before {
+      content: ""; position: absolute; left: 0; right: 0; top: -1px; height: 14px;
+      background-image: radial-gradient(circle at 10px 7px, var(--bg) 7px, transparent 7.5px);
+      background-size: 20px 14px; background-repeat: repeat-x;
+    }
+    .recibo .rotulo { text-align: center; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--exito); margin-bottom: 6px; }
+    .fila-recibo { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: 0.88rem; }
+    .fila-recibo:last-of-type { border-bottom: none; font-weight: 700; padding-top: 12px; }
+    .fila-recibo .val { font-variant-numeric: tabular-nums; }
+    .recibo .nota { margin-top: 16px; text-align: center; font-size: 0.78rem; color: var(--ink-soft); font-family: -apple-system, "Segoe UI", system-ui, sans-serif; }
+
+    .spinner { text-align: center; color: var(--ink-soft); margin: 8px 0; font-size: 0.85rem; }
     #seccion-horario, #seccion-datos, #seccion-confirmar, #seccion-reserva { display: none; }
-    .spinner { display: none; text-align: center; color: #888; margin: 8px 0; }
-    #vista-cargando { text-align: center; color: #888; margin-top: 60px; }
+    #vista-cargando { text-align: center; color: var(--ink-soft); margin-top: 60px; }
   </style>
 </head>
 <body>
 
-<div id="vista-cargando">Cargando información de la barbería...</div>
+<div class="franja-poste"></div>
 
-<div id="seccion-reserva" style="width:100%; display:flex; flex-direction:column; align-items:center;">
-  <h1 id="titulo-barberia">✂️ Barbería</h1>
-  <p class="subtitulo">Agenda tu cita en segundos</p>
+<div id="vista-cargando" class="contenedor">Cargando información de la barbería...</div>
 
-  <div class="card">
-    <h2>1. Elige tu servicio</h2>
+<div id="seccion-reserva" class="contenedor">
+  <div class="encabezado">
+    <div class="marca" id="titulo-barberia">Barbería</div>
+    <div class="lema">Agenda tu cita en segundos</div>
+  </div>
+
+  <div class="pasos" id="pasos">
+    <div class="paso" data-p="1"><div class="num">1</div><span>Servicio</span></div>
+    <div class="paso" data-p="2"><div class="num">2</div><span>Barbero</span></div>
+    <div class="paso" data-p="3"><div class="num">3</div><span>Horario</span></div>
+    <div class="paso" data-p="4"><div class="num">4</div><span>Datos</span></div>
+  </div>
+
+  <div class="tarjeta">
+    <div class="sello">1</div>
+    <h2>Elige tu servicio</h2>
     <div class="opciones" id="lista-servicios"></div>
   </div>
 
-  <div class="card">
-    <h2>2. Elige tu barbero</h2>
+  <div class="tarjeta">
+    <div class="sello">2</div>
+    <h2>Elige tu barbero</h2>
     <div class="opciones" id="lista-barberos"></div>
   </div>
 
-  <div class="card" id="seccion-horario">
-    <h2>3. Elige fecha y hora</h2>
+  <div class="tarjeta" id="seccion-horario">
+    <div class="sello">3</div>
+    <h2>Fecha y hora</h2>
     <label>Fecha</label>
     <input type="date" id="input-fecha" min="" />
-    <label style="margin-top:16px">Horarios disponibles</label>
+    <label>Horarios disponibles</label>
     <div class="spinner" id="spinner-slots">Cargando horarios...</div>
     <div class="slots" id="lista-slots"></div>
   </div>
 
-  <div class="card" id="seccion-datos">
-    <h2>4. Tus datos</h2>
+  <div class="tarjeta" id="seccion-datos">
+    <div class="sello">4</div>
+    <h2>Tus datos</h2>
     <label>Nombre completo</label>
     <input type="text" id="input-nombre" placeholder="Ej: Juan Pérez" />
     <label>Número de WhatsApp</label>
     <input type="tel" id="input-telefono" placeholder="+573001234567" />
   </div>
 
-  <div class="card" id="seccion-confirmar">
-    <h2>5. Confirmar cita</h2>
-    <div id="resumen" style="color:#aaa; font-size:0.9rem; line-height:1.8; margin-bottom:16px;"></div>
+  <div class="tarjeta" id="seccion-confirmar">
+    <div class="sello">5</div>
+    <h2>Confirmar cita</h2>
+    <div id="resumen" style="color:var(--ink-soft); font-size:0.9rem; line-height:1.8; margin-bottom:16px; margin-left:34px;"></div>
     <button class="btn" id="btn-agendar" onclick="agendarCita()">Agendar cita por WhatsApp</button>
     <div class="mensaje" id="mensaje-resultado"></div>
+  </div>
+
+  <div class="recibo" id="recibo">
+    <div class="rotulo">✅ Cita confirmada</div>
+    <div class="fila-recibo"><span>Servicio</span><span class="val" id="r-servicio"></span></div>
+    <div class="fila-recibo"><span>Barbero</span><span class="val" id="r-barbero"></span></div>
+    <div class="fila-recibo"><span>Fecha</span><span class="val" id="r-fecha"></span></div>
+    <div class="fila-recibo"><span>Hora</span><span class="val" id="r-hora"></span></div>
+    <div class="fila-recibo"><span>Total</span><span class="val" id="r-precio"></span></div>
+    <div class="nota">Te llegará la confirmación por WhatsApp en unos segundos.</div>
   </div>
 </div>
 
 <script>
   const SUPABASE_URL = 'https://hkcpfkjljgbbdrtwsjbr.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrY3Bma2psamdiYmRydHdzamJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NTQ3MTUsImV4cCI6MjA5ODQzMDcxNX0.0KWTzJ__5A7w1rFu7CoUdjdapGgpGs9dVLc6ZZsLLj4';
+  const SUPABASE_KEY = 'PEGA_AQUI_TU_ANON_KEY_FRESCA_DE_SUPABASE';
 
   const params = new URLSearchParams(window.location.search);
   const SLUG = params.get('b');
@@ -125,28 +249,33 @@
     return res.json();
   }
 
-  // ── Punto de entrada: resolver la barbería por su slug en la URL ──
+  function marcarPasos() {
+    const p1 = !!estado.servicioId, p2 = !!estado.barberoId, p3 = !!estado.horaInicio;
+    const p4 = document.getElementById('seccion-datos').style.display === 'block';
+    document.querySelectorAll('#pasos .paso').forEach(el => {
+      const n = parseInt(el.dataset.p);
+      const hecho = (n === 1 && p1) || (n === 2 && p2) || (n === 3 && p3) || (n === 4 && p4);
+      el.classList.toggle('hecho', hecho);
+    });
+  }
+
   async function iniciar() {
     if (!SLUG) {
       document.getElementById('vista-cargando').textContent =
         'Falta el identificador de la barbería en el link (ej: ?b=nombre-barberia).';
       return;
     }
-
     const resultado = await supabase('barberia', `slug=eq.${encodeURIComponent(SLUG)}&activa=eq.true&select=id,nombre`);
-
     if (!resultado.length) {
-      document.getElementById('vista-cargando').textContent =
-        'Esta barbería no existe o no está activa.';
+      document.getElementById('vista-cargando').textContent = 'Esta barbería no existe o no está activa.';
       return;
     }
-
     BARBERIA_ID = resultado[0].id;
-    document.getElementById('titulo-barberia').textContent = '✂️ ' + resultado[0].nombre;
+    document.getElementById('titulo-barberia').textContent = resultado[0].nombre;
     document.title = resultado[0].nombre + ' — Agenda tu cita';
 
     document.getElementById('vista-cargando').style.display = 'none';
-    document.getElementById('seccion-reserva').style.display = 'flex';
+    document.getElementById('seccion-reserva').style.display = 'block';
 
     cargarServicios();
     cargarBarberos();
@@ -183,6 +312,7 @@
     el.classList.add('seleccionado');
     estado.servicioId = s.id; estado.servicioNombre = s.nombre;
     estado.servicioDuracion = s.duracion_min; estado.servicioPrice = s.precio;
+    marcarPasos();
     verificarMostrarHorario();
   }
 
@@ -190,6 +320,7 @@
     document.querySelectorAll('#lista-barberos .opcion').forEach(e => e.classList.remove('seleccionado'));
     el.classList.add('seleccionado');
     estado.barberoId = b.id; estado.barberoNombre = b.nombre;
+    marcarPasos();
     verificarMostrarHorario();
   }
 
@@ -221,7 +352,7 @@
     const cont = document.getElementById('lista-slots');
 
     if (!disponibilidad.length) {
-      cont.innerHTML = '<p style="color:#888;font-size:0.85rem">No hay disponibilidad para esta fecha.</p>';
+      cont.innerHTML = '<p style="color:var(--ink-soft);font-size:0.85rem">No hay disponibilidad para esta fecha.</p>';
       return;
     }
 
@@ -259,6 +390,7 @@
     document.querySelectorAll('.slot').forEach(e => e.classList.remove('seleccionado'));
     el.classList.add('seleccionado');
     estado.horaInicio = ini; estado.horaFin = fin;
+    marcarPasos();
     actualizarResumen();
     document.getElementById('seccion-confirmar').style.display = 'block';
   }
@@ -307,9 +439,13 @@
       });
 
       if (citaRes.ok) {
-        msg.className = 'mensaje exito';
-        msg.textContent = '✅ ¡Cita agendada! Recibirás un WhatsApp de confirmación en unos segundos.';
-        btn.textContent = 'Cita agendada';
+        document.getElementById('r-servicio').textContent = estado.servicioNombre;
+        document.getElementById('r-barbero').textContent = estado.barberoNombre;
+        document.getElementById('r-fecha').textContent = estado.fecha;
+        document.getElementById('r-hora').textContent = estado.horaInicio;
+        document.getElementById('r-precio').textContent = '$' + Number(estado.servicioPrice).toLocaleString('es-CO');
+        document.getElementById('seccion-confirmar').style.display = 'none';
+        document.getElementById('recibo').classList.add('visible');
       } else {
         const err = await citaRes.json();
         msg.className = 'mensaje error';
