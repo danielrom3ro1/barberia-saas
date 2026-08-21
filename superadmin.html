@@ -144,6 +144,7 @@
     <button class="tab" onclick="verTab('turnos', this)">📅 Turnos</button>
   </div>
 
+  <!-- TAB BARBERÍAS -->
   <div class="panel activa" id="panel-barberias">
     <div class="card">
       <h2>Mis barberías</h2>
@@ -162,6 +163,7 @@
     </div>
   </div>
 
+  <!-- TAB SERVICIOS -->
   <div class="panel" id="panel-servicios">
     <div class="card">
       <h2>Servicios de la barbería seleccionada</h2>
@@ -174,13 +176,14 @@
       <input type="text" id="sv-nombre" />
       <div class="fila">
         <div><label>Duración (min)</label><input type="number" id="sv-duracion" /></div>
-        <div><label>Precio (COP)</label><input type="number" id="sv-precio" /></div>
+        <div><label>Precio (COP)</label><input type="text" id="sv-precio" inputmode="numeric" placeholder="25.000" oninput="formatearPrecioInput(this)" /></div>
       </div>
       <button class="btn" onclick="guardarServicio()">Guardar</button>
       <div class="mensaje" id="msg-servicio"></div>
     </div>
   </div>
 
+  <!-- TAB BARBEROS -->
   <div class="panel" id="panel-barberos">
     <div class="card">
       <h2>Barberos de la barbería seleccionada</h2>
@@ -195,11 +198,19 @@
         <div><label>WhatsApp</label><input type="tel" id="bb-telefono" placeholder="+57..." /></div>
         <div><label>Comisión (%)</label><input type="number" id="bb-comision" /></div>
       </div>
+      <div class="fila" id="fila-acceso-barbero">
+        <div><label>Email de acceso</label><input type="email" id="bb-email" placeholder="barbero@correo.com" /></div>
+        <div><label>Contraseña</label><input type="password" id="bb-password" placeholder="Mínimo 6 caracteres" /></div>
+      </div>
+      <p style="color:var(--ink-soft); font-size:0.8rem; margin-top:6px;" id="nota-acceso-barbero">
+        Con esto, el barbero podrá iniciar sesión en su agenda con este email y contraseña.
+      </p>
       <button class="btn" onclick="guardarBarbero()">Guardar</button>
       <div class="mensaje" id="msg-barbero"></div>
     </div>
   </div>
 
+  <!-- TAB TURNOS -->
   <div class="panel" id="panel-turnos">
     <div class="card">
       <h2>Programar disponibilidad masiva</h2>
@@ -226,6 +237,22 @@
       <button class="btn" onclick="programarTurnos()">Crear turnos</button>
       <div class="mensaje" id="msg-turnos"></div>
     </div>
+
+    <div class="card">
+      <h2>Copiar turnos de un período a otro</h2>
+      <p style="color:var(--ink-soft); font-size:0.85rem;">Útil para repetir el mes pasado en el mes siguiente, por ejemplo.</p>
+      <label>Barbero</label>
+      <select id="cp-barbero"></select>
+      <div class="fila">
+        <div><label>Copiar desde</label><input type="date" id="cp-desde" /></div>
+        <div><label>Hasta</label><input type="date" id="cp-hasta" /></div>
+      </div>
+      <label>Pegar a partir de</label>
+      <input type="date" id="cp-destino" />
+      <button class="btn" onclick="copiarTurnos()">Copiar turnos</button>
+      <div class="mensaje" id="msg-copiar"></div>
+    </div>
+
     <div class="card">
       <h2>Turnos próximos (7 días)</h2>
       <div id="lista-turnos"></div>
@@ -236,7 +263,7 @@
 <script>
   const SUPABASE_URL = 'https://hkcpfkjljgbbdrtwsjbr.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrY3Bma2psamdiYmRydHdzamJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NTQ3MTUsImV4cCI6MjA5ODQzMDcxNX0.0KWTzJ__5A7w1rFu7CoUdjdapGgpGs9dVLc6ZZsLLj4';
-  const SITE_URL = 'https://danielrom3ro1.github.io/barberia-saas';
+  const SITE_URL = 'https://barberia-saas-lime.vercel.app';
 
   let accessToken = null;
   let barberiaActual = null;
@@ -259,7 +286,7 @@
     const el = $(id);
     el.className = 'mensaje ' + (ok ? 'exito' : 'error');
     el.textContent = texto;
-    setTimeout(() => { el.className = 'mensaje'; }, 4000);
+    setTimeout(() => { el.className = 'mensaje'; }, 5000);
   }
 
   function copiarLink(texto, btn) {
@@ -275,6 +302,16 @@
     caja.style.display = caja.style.display === 'block' ? 'none' : 'block';
   }
 
+  // ─── Formato de precio estilo colombiano (25.000) ───
+  function formatearPrecioInput(el) {
+    const valor = el.value.replace(/\D/g, '');
+    el.value = valor ? Number(valor).toLocaleString('es-CO') : '';
+  }
+  function precioNumerico(el) {
+    return parseInt(el.value.replace(/\D/g, '')) || 0;
+  }
+
+  // ─── Login ───
   async function iniciarSesion() {
     const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
       method: 'POST',
@@ -311,6 +348,7 @@
     $('panel-' + nombre).classList.add('activa');
   }
 
+  // ─── Barberías ───
   async function cargarBarberias() {
     const barberias = await api('GET', 'barberia', 'select=id,nombre,slug,whatsapp_admin,activa&order=nombre.asc');
     const cont = $('lista-barberias');
@@ -363,7 +401,7 @@
       sel.appendChild(opt);
     });
 
-    if (!barberiaActual) barberiaActual = barberias[0].id;
+    if (!barberiaActual || !barberias.some(b => b.id === barberiaActual)) barberiaActual = barberias[0].id;
     sel.value = barberiaActual;
     cargarServicios(); cargarBarberos(); cargarTurnos();
   }
@@ -379,9 +417,16 @@
     const whatsapp = $('nb-whatsapp').value.trim();
     if (!nombre || !slug) return aviso('msg-barberia', false, 'Nombre y slug son obligatorios.');
 
-    const res = await api('POST', 'barberia', '', { nombre, slug, whatsapp_admin: whatsapp });
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/barberia`, {
+      method: 'POST',
+      headers: headers({ 'Prefer': 'return=representation' }),
+      body: JSON.stringify({ nombre, slug, whatsapp_admin: whatsapp })
+    });
+
     if (res.ok) {
-      aviso('msg-barberia', true, '✅ Barbería creada.');
+      const [nueva] = await res.json();
+      barberiaActual = nueva.id; // cambia el contexto automáticamente a la barbería recién creada
+      aviso('msg-barberia', true, '✅ Barbería creada. Ya estás trabajando sobre ella.');
       $('nb-nombre').value = ''; $('nb-slug').value = ''; $('nb-whatsapp').value = '';
       cargarBarberias();
     } else {
@@ -394,6 +439,7 @@
     cargarBarberias();
   }
 
+  // ─── Servicios ───
   async function cargarServicios() {
     const servicios = await api('GET', 'servicio', `barberia_id=eq.${barberiaActual}&activo=eq.true&select=id,nombre,duracion_min,precio&order=nombre.asc`);
     const cont = $('lista-servicios');
@@ -413,13 +459,14 @@
 
   function editarServicio(s) {
     $('sv-id').value = s.id; $('sv-nombre').value = s.nombre;
-    $('sv-duracion').value = s.duracion_min; $('sv-precio').value = s.precio;
+    $('sv-duracion').value = s.duracion_min;
+    $('sv-precio').value = Number(s.precio).toLocaleString('es-CO');
     $('titulo-form-servicio').textContent = 'Editar servicio: ' + s.nombre;
   }
 
   async function guardarServicio() {
     const id = $('sv-id').value;
-    const body = { nombre: $('sv-nombre').value.trim(), duracion_min: parseInt($('sv-duracion').value), precio: parseFloat($('sv-precio').value) };
+    const body = { nombre: $('sv-nombre').value.trim(), duracion_min: parseInt($('sv-duracion').value), precio: precioNumerico($('sv-precio')) };
     if (!body.nombre || !body.duracion_min || !body.precio) return aviso('msg-servicio', false, 'Completa todos los campos.');
 
     const res = id ? await api('PATCH', 'servicio', `id=eq.${id}`, body) : await api('POST', 'servicio', '', { ...body, barberia_id: barberiaActual });
@@ -440,10 +487,14 @@
     cargarServicios();
   }
 
+  // ─── Barberos ───
   async function cargarBarberos() {
     const barberos = await api('GET', 'barbero', `barberia_id=eq.${barberiaActual}&activo=eq.true&select=id,nombre,telefono,comision_pct&order=nombre.asc`);
     const cont = $('lista-barberos');
     cont.innerHTML = barberos.length ? '' : '<div class="vacio">Sin barberos.</div>';
+
+    const opciones = barberos.map(b => `<option value="${b.id}">${b.nombre}</option>`).join('');
+    $('cp-barbero').innerHTML = opciones;
 
     barberos.forEach(b => {
       const div = document.createElement('div');
@@ -471,6 +522,17 @@
     $('bb-id').value = b.id; $('bb-nombre').value = b.nombre;
     $('bb-telefono').value = b.telefono || ''; $('bb-comision').value = b.comision_pct || 0;
     $('titulo-form-barbero').textContent = 'Editar barbero: ' + b.nombre;
+    // Al editar un barbero existente no se toca su acceso — se oculta esa parte
+    $('fila-acceso-barbero').style.display = 'none';
+    $('nota-acceso-barbero').style.display = 'none';
+  }
+
+  function limpiarFormBarbero() {
+    $('bb-id').value = ''; $('bb-nombre').value = ''; $('bb-telefono').value = ''; $('bb-comision').value = '';
+    $('bb-email').value = ''; $('bb-password').value = '';
+    $('titulo-form-barbero').textContent = 'Agregar barbero';
+    $('fila-acceso-barbero').style.display = 'flex';
+    $('nota-acceso-barbero').style.display = 'block';
   }
 
   async function guardarBarbero() {
@@ -478,16 +540,62 @@
     const body = { nombre: $('bb-nombre').value.trim(), telefono: $('bb-telefono').value.trim(), comision_pct: parseFloat($('bb-comision').value) || 0 };
     if (!body.nombre) return aviso('msg-barbero', false, 'El nombre es obligatorio.');
 
-    const res = id ? await api('PATCH', 'barbero', `id=eq.${id}`, body) : await api('POST', 'barbero', '', { ...body, barberia_id: barberiaActual });
-
-    if (res.ok) {
-      aviso('msg-barbero', true, '✅ Guardado.');
-      $('bb-id').value = ''; $('bb-nombre').value = ''; $('bb-telefono').value = ''; $('bb-comision').value = '';
-      $('titulo-form-barbero').textContent = 'Agregar barbero';
-      cargarBarberos();
-    } else {
-      aviso('msg-barbero', false, 'No se pudo guardar.');
+    // ─ Editar un barbero existente: no se toca su login ─
+    if (id) {
+      const res = await api('PATCH', 'barbero', `id=eq.${id}`, body);
+      if (res.ok) {
+        aviso('msg-barbero', true, '✅ Guardado.');
+        limpiarFormBarbero();
+        cargarBarberos();
+      } else {
+        aviso('msg-barbero', false, 'No se pudo guardar.');
+      }
+      return;
     }
+
+    // ─ Crear un barbero nuevo: también crea su usuario de acceso ─
+    const email = $('bb-email').value.trim();
+    const password = $('bb-password').value;
+    if (!email || !password) return aviso('msg-barbero', false, 'Para crear un barbero nuevo, el email y la contraseña de acceso son obligatorios.');
+    if (password.length < 6) return aviso('msg-barbero', false, 'La contraseña debe tener al menos 6 caracteres.');
+
+    // 1. Crear la fila del barbero
+    const resBarbero = await fetch(`${SUPABASE_URL}/rest/v1/barbero`, {
+      method: 'POST',
+      headers: headers({ 'Prefer': 'return=representation' }),
+      body: JSON.stringify({ ...body, barberia_id: barberiaActual })
+    });
+    if (!resBarbero.ok) return aviso('msg-barbero', false, 'No se pudo crear el barbero.');
+    const [nuevoBarbero] = await resBarbero.json();
+
+    // 2. Crear su usuario de acceso (login)
+    const resAuth = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const dataAuth = await resAuth.json();
+    const nuevoUserId = dataAuth.id || dataAuth.user?.id;
+
+    if (!resAuth.ok || !nuevoUserId) {
+      aviso('msg-barbero', false, 'El barbero se creó, pero no se pudo crear su acceso: ' + (dataAuth.msg || dataAuth.error_description || 'verifica que el email no esté ya registrado.'));
+      limpiarFormBarbero();
+      cargarBarberos();
+      return;
+    }
+
+    // 3. Vincular el usuario con el barbero en la tabla perfiles
+    const resPerfil = await api('POST', 'perfiles', '', {
+      user_id: nuevoUserId, barberia_id: barberiaActual, barbero_id: nuevoBarbero.id, rol: 'barbero'
+    });
+
+    if (resPerfil.ok) {
+      aviso('msg-barbero', true, '✅ Barbero creado. Ya puede iniciar sesión con el email y contraseña indicados.');
+    } else {
+      aviso('msg-barbero', false, 'El barbero y su usuario se crearon, pero no se pudo vincular el perfil.');
+    }
+    limpiarFormBarbero();
+    cargarBarberos();
   }
 
   async function borrarBarbero(id) {
@@ -496,6 +604,7 @@
     cargarBarberos();
   }
 
+  // ─── Turnos masivos ───
   document.addEventListener('click', e => {
     if (e.target.classList.contains('dia')) e.target.classList.toggle('activo');
   });
@@ -531,6 +640,36 @@
       cargarTurnos();
     } else {
       aviso('msg-turnos', false, 'No se pudieron crear los turnos.');
+    }
+  }
+
+  // ─── Copiar turnos de un período a otro ───
+  async function copiarTurnos() {
+    const barberoId = $('cp-barbero').value;
+    const desde = $('cp-desde').value, hasta = $('cp-hasta').value, destino = $('cp-destino').value;
+    if (!barberoId) return aviso('msg-copiar', false, 'Selecciona un barbero.');
+    if (!desde || !hasta || !destino) return aviso('msg-copiar', false, 'Completa todas las fechas.');
+    if (hasta < desde) return aviso('msg-copiar', false, 'La fecha final debe ser posterior a la inicial.');
+
+    const origen = await api('GET', 'disponibilidad', `barbero_id=eq.${barberoId}&fecha=gte.${desde}&fecha=lte.${hasta}&select=fecha,hora_inicio,hora_fin,tipo`);
+    if (!Array.isArray(origen) || !origen.length) return aviso('msg-copiar', false, 'No hay turnos en ese rango para copiar.');
+
+    const inicioOrigen = new Date(desde + 'T12:00:00');
+    const inicioDestino = new Date(destino + 'T12:00:00');
+    const offsetDias = Math.round((inicioDestino - inicioOrigen) / 86400000);
+
+    const filas = origen.map(t => {
+      const f = new Date(t.fecha + 'T12:00:00');
+      f.setDate(f.getDate() + offsetDias);
+      return { barbero_id: barberoId, fecha: f.toISOString().split('T')[0], hora_inicio: t.hora_inicio, hora_fin: t.hora_fin, tipo: t.tipo };
+    });
+
+    const res = await api('POST', 'disponibilidad', '', filas);
+    if (res.ok) {
+      aviso('msg-copiar', true, `✅ ${filas.length} turnos copiados.`);
+      cargarTurnos();
+    } else {
+      aviso('msg-copiar', false, 'No se pudieron copiar los turnos. ¿Ya existen turnos en esas fechas?');
     }
   }
 
