@@ -205,10 +205,12 @@
     <h2>Tus datos</h2>
     <label>Nombre completo</label>
     <input type="text" id="input-nombre" placeholder="Ej: Juan Pérez" />
-    <label>Número de WhatsApp</label>
-    <input type="tel" id="input-telefono" placeholder="+573001234567" />
-    <label>Correo electrónico (opcional)</label>
+    <label>Correo electrónico</label>
     <input type="email" id="input-email-cliente" placeholder="tu@correo.com" />
+    <p style="color:var(--ink-soft); font-size:0.78rem; margin-top:4px;">Lo usamos para enviarte la confirmación y los links de cancelar o reprogramar.</p>
+    <label>WhatsApp (opcional)</label>
+    <input type="tel" id="input-telefono" placeholder="+573001234567" />
+    <p style="color:var(--ink-soft); font-size:0.78rem; margin-top:4px;">Solo para que el barbero te contacte si lo necesita.</p>
   </div>
 
   <div class="tarjeta" id="seccion-confirmar">
@@ -226,7 +228,7 @@
     <div class="fila-recibo"><span>Fecha</span><span class="val" id="r-fecha"></span></div>
     <div class="fila-recibo"><span>Hora</span><span class="val" id="r-hora"></span></div>
     <div class="fila-recibo"><span>Total</span><span class="val" id="r-precio"></span></div>
-    <div class="nota">Te llegará la confirmación por WhatsApp en unos segundos.</div>
+    <div class="nota" id="r-nota">Confirmación enviada.</div>
   </div>
 </div>
 
@@ -417,7 +419,7 @@
     const msg = document.getElementById('mensaje-resultado');
     msg.className = 'mensaje';
 
-    if (!nombre || !telefono) { msg.className = 'mensaje error'; msg.textContent = 'Completa tu nombre y WhatsApp.'; return; }
+    if (!nombre) { msg.className = 'mensaje error'; msg.textContent = 'Por favor escribe tu nombre.'; return; }
     if (!estado.horaInicio) { msg.className = 'mensaje error'; msg.textContent = 'Selecciona un horario.'; return; }
 
     const btn = document.getElementById('btn-agendar');
@@ -453,6 +455,9 @@
         document.getElementById('r-precio').textContent = '$' + Number(estado.servicioPrice).toLocaleString('es-CO');
         document.getElementById('seccion-confirmar').style.display = 'none';
         document.getElementById('recibo').classList.add('visible');
+        document.getElementById('r-nota').textContent = emailCliente
+          ? 'Te llegará la confirmación a tu correo en unos segundos.'
+          : 'Guarda este comprobante — no diste un correo, así que no recibirás confirmación automática.';
 
         // Enviar correo de confirmación (solo si el cliente puso su email)
         if (emailCliente) {
