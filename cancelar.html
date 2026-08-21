@@ -3,48 +3,69 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cancelar cita — Barber Kings</title>
+  <title>Cancelar cita</title>
   <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #eef0f2; --surface: #ffffff; --ink: #171a21; --ink-soft: #5b6270;
+      --accent: #b8402f; --accent-2: #3d5a74; --line: #dadfe3; --accent-ink: #fff8f4;
+      --exito: #2f7d52; --exito-bg: #e7f4ec;
+      --err: #b8402f; --err-bg: #fbeae7;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #14161c; --surface: #1d2028; --ink: #eceae3; --ink-soft: #9aa0ac;
+        --accent: #d35a44; --accent-2: #6f93b3; --line: #2b2f39; --accent-ink: #14161c;
+        --exito: #5cb37f; --exito-bg: #16241c;
+        --err: #d35a44; --err-bg: #2a1a17;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #14161c; --surface: #1d2028; --ink: #eceae3; --ink-soft: #9aa0ac;
+      --accent: #d35a44; --accent-2: #6f93b3; --line: #2b2f39; --accent-ink: #14161c;
+      --exito: #5cb37f; --exito-bg: #16241c;
+      --err: #d35a44; --err-bg: #2a1a17;
+    }
+    :root[data-theme="light"] {
+      --bg: #eef0f2; --surface: #ffffff; --ink: #171a21; --ink-soft: #5b6270;
+      --accent: #b8402f; --accent-2: #3d5a74; --line: #dadfe3; --accent-ink: #fff8f4;
+      --exito: #2f7d52; --exito-bg: #e7f4ec;
+      --err: #b8402f; --err-bg: #fbeae7;
+    }
+
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #0f0f0f;
-      color: #f0f0f0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      text-align: center;
+      font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+      background: var(--bg); color: var(--ink);
+      min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 16px; text-align: center;
     }
-    h1 { color: #c9a84c; margin-bottom: 16px; }
-    .card {
-      background: #1a1a1a;
-      border-radius: 12px;
-      padding: 32px;
-      max-width: 420px;
-      width: 100%;
+
+    .franja-poste {
+      position: fixed; top: 0; left: 0; right: 0; height: 10px;
+      background: repeating-linear-gradient(45deg,
+        var(--accent) 0 14px, var(--surface) 14px 28px,
+        var(--accent-2) 28px 42px, var(--surface) 42px 56px);
+      background-size: 200% 100%;
     }
-    p { color: #aaa; line-height: 1.6; margin-bottom: 24px; }
-    .btn {
-      padding: 14px 28px;
-      background: #d9534f;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .btn:disabled { background: #444; cursor: not-allowed; }
-    .mensaje { margin-top: 20px; padding: 14px; border-radius: 8px; display: none; }
-    .exito { background: #0d2b1a; color: #4caf7d; display: block; }
-    .error { background: #2b0d0d; color: #f44; display: block; }
+    @media (prefers-reduced-motion: no-preference) { .franja-poste { animation: girar 7s linear infinite; } }
+    @keyframes girar { from { background-position: 0 0; } to { background-position: -56px 0; } }
+
+    .card { background: var(--surface); border-radius: 16px; padding: 34px 28px; max-width: 420px; width: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    h1 { font-family: Georgia, serif; font-weight: 700; font-size: 1.5rem; color: var(--ink); margin-bottom: 16px; }
+    p { color: var(--ink-soft); line-height: 1.6; margin-bottom: 24px; }
+    .btn { padding: 14px 28px; background: var(--err); color: var(--accent-ink); border: none; border-radius: 10px; font-family: "Bahnschrift", "Arial Narrow", sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; }
+    .btn:hover { filter: brightness(1.08); }
+    .btn:disabled { background: var(--line); color: var(--ink-soft); cursor: not-allowed; }
+    .mensaje { margin-top: 20px; padding: 14px; border-radius: 10px; display: none; }
+    .exito { background: var(--exito-bg); color: var(--exito); display: block; }
+    .error { background: var(--err-bg); color: var(--err); display: block; }
   </style>
 </head>
 <body>
+  <div class="franja-poste"></div>
   <div class="card">
-    <h1>✂️ Barber Kings</h1>
+    <h1>💈 Cancelar cita</h1>
     <p id="texto">¿Estás seguro de que deseas cancelar tu cita?<br>Esta acción no se puede deshacer.</p>
     <button class="btn" id="btn-cancelar" onclick="cancelar()">Sí, cancelar mi cita</button>
     <div class="mensaje" id="mensaje"></div>
@@ -52,9 +73,8 @@
 
 <script>
   const SUPABASE_URL = 'https://hkcpfkjljgbbdrtwsjbr.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrY3Bma2psamdiYmRydHdzamJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NTQ3MTUsImV4cCI6MjA5ODQzMDcxNX0.0KWTzJ__5A7w1rFu7CoUdjdapGgpGs9dVLc6ZZsLLj4';
+  const SUPABASE_KEY = 'PEGA_AQUI_TU_ANON_KEY_FRESCA_DE_SUPABASE';
 
-  // Leer el token de la URL: cancelar.html?token=abc123
   const token = new URLSearchParams(window.location.search).get('token');
 
   if (!token) {
@@ -71,10 +91,7 @@
     try {
       const res = await fetch(
         `${SUPABASE_URL}/functions/v1/cancelar-cita?token=${encodeURIComponent(token)}`,
-        {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${SUPABASE_KEY}` }
-        }
+        { method: 'POST', headers: { 'Authorization': `Bearer ${SUPABASE_KEY}` } }
       );
       const data = await res.json();
 
