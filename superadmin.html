@@ -354,7 +354,7 @@
   }
 
   // ─── Barberías ───
-   async function cargarBarberias() {
+  async function cargarBarberias() {
     const barberias = await api('GET', 'barberia', 'select=id,nombre,slug,whatsapp_admin,direccion,activa&order=nombre.asc');
     const cont = $('lista-barberias');
     const sel = $('sel-barberia');
@@ -422,6 +422,7 @@
     $('nb-nombre').value = b.nombre;
     $('nb-slug').value = b.slug;
     $('nb-slug').disabled = true;
+    $('nota-slug').style.display = 'block';
     $('nb-whatsapp').value = b.whatsapp_admin || '';
     $('nb-direccion').value = b.direccion || '';
     $('titulo-form-barberia').textContent = 'Editar: ' + b.nombre;
@@ -463,25 +464,9 @@
 
     if (res.ok) {
       const [nueva] = await res.json();
-      barberiaActual = nueva.id;
-      aviso('msg-barberia', true, '✅ Barbería creada. Ya estás trabajando sobre ella.');
-      limpiarFormBarberia();
-      cargarBarberias();
-    } else {
-      aviso('msg-barberia', false, 'Error — ¿el slug ya existe?');
-    }
-  }
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/barberia`, {
-      method: 'POST',
-      headers: headers({ 'Prefer': 'return=representation' }),
-      body: JSON.stringify({ nombre, slug, whatsapp_admin: whatsapp })
-    });
-
-    if (res.ok) {
-      const [nueva] = await res.json();
       barberiaActual = nueva.id; // cambia el contexto automáticamente a la barbería recién creada
       aviso('msg-barberia', true, '✅ Barbería creada. Ya estás trabajando sobre ella.');
-      $('nb-nombre').value = ''; $('nb-slug').value = ''; $('nb-whatsapp').value = '';
+      limpiarFormBarberia();
       cargarBarberias();
     } else {
       aviso('msg-barberia', false, 'Error — ¿el slug ya existe?');
