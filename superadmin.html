@@ -323,7 +323,7 @@
 
     accessToken = data.access_token;
     const perfil = await api('GET', 'perfiles', 'select=rol');
-    if (!perfil.length || perfil[0].rol !== 'superadmin') {
+    if (!perfil.some(p => p.rol === 'superadmin')) {
       accessToken = null;
       return aviso('msg-login', false, 'Este usuario no es superadmin.');
     }
