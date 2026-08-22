@@ -151,14 +151,19 @@
       <div id="lista-barberias"></div>
     </div>
     <div class="card">
-      <h2>Crear barbería nueva</h2>
+      <h2 id="titulo-form-barberia">Crear barbería nueva</h2>
+      <input type="hidden" id="nb-id" />
       <label>Nombre</label>
       <input type="text" id="nb-nombre" placeholder="Ej: Barbería El Patrón" />
       <label>Slug (para la URL, sin espacios ni tildes)</label>
       <input type="text" id="nb-slug" placeholder="Ej: el-patron-medellin" />
+      <p style="color:var(--ink-soft); font-size:0.78rem; margin-top:4px;" id="nota-slug">No lo cambies después de compartir el link — dejaría de funcionar el link viejo.</p>
       <label>WhatsApp del dueño</label>
       <input type="tel" id="nb-whatsapp" placeholder="+573001234567" />
-      <button class="btn" onclick="crearBarberia()">Crear barbería</button>
+      <label>Dirección</label>
+      <input type="text" id="nb-direccion" placeholder="Ej: Calle 63 #11-42, Chapinero, Bogotá" />
+      <p style="color:var(--ink-soft); font-size:0.78rem; margin-top:4px;">Se usa en el botón "Cómo llegar" que ven los clientes.</p>
+      <button class="btn" onclick="guardarBarberia()">Guardar</button>
       <div class="mensaje" id="msg-barberia"></div>
     </div>
   </div>
@@ -349,8 +354,8 @@
   }
 
   // ─── Barberías ───
-  async function cargarBarberias() {
-    const barberias = await api('GET', 'barberia', 'select=id,nombre,slug,whatsapp_admin,activa&order=nombre.asc');
+   async function cargarBarberias() {
+    const barberias = await api('GET', 'barberia', 'select=id,nombre,slug,whatsapp_admin,direccion,activa&order=nombre.asc');
     const cont = $('lista-barberias');
     const sel = $('sel-barberia');
     cont.innerHTML = '';
@@ -371,9 +376,10 @@
         <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
           <div>
             <b>${b.nombre}</b> <span class="badge ${b.activa ? 'on' : 'off'}">${b.activa ? 'ACTIVA' : 'INACTIVA'}</span>
-            <div class="sub">/${b.slug} · ${b.whatsapp_admin || 'sin WhatsApp'}</div>
+            <div class="sub">/${b.slug} · ${b.whatsapp_admin || 'sin WhatsApp'} · ${b.direccion || 'sin dirección'}</div>
           </div>
           <div>
+            <button class="btn-peq btn-editar" onclick='editarBarberia(${JSON.stringify(b)})'>Editar</button>
             <button class="btn-peq btn-editar" onclick="toggleLinks('${b.id}')">🔗 Links</button>
             <button class="btn-peq ${b.activa ? 'btn-borrar' : 'btn-editar'}" onclick="alternarBarberia('${b.id}', ${!b.activa})">
               ${b.activa ? 'Desactivar' : 'Activar'}
@@ -411,12 +417,60 @@
     cargarServicios(); cargarBarberos(); cargarTurnos();
   }
 
-  async function crearBarberia() {
+  function editarBarberia(b) {
+    $('nb-id').value = b.id;
+    $('nb-nombre').value = b.nombre;
+    $('nb-slug').value = b.slug;
+    $('nb-slug').disabled = true;
+    $('nb-whatsapp').value = b.whatsapp_admin || '';
+    $('nb-direccion').value = b.direccion || '';
+    $('titulo-form-barberia').textContent = 'Editar: ' + b.nombre;
+    $('titulo-form-barberia').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function limpiarFormBarberia() {
+    $('nb-id').value = ''; $('nb-nombre').value = ''; $('nb-slug').value = '';
+    $('nb-slug').disabled = false;
+    $('nb-whatsapp').value = ''; $('nb-direccion').value = '';
+    $('titulo-form-barberia').textContent = 'Crear barbería nueva';
+  }
+
+  async function guardarBarberia() {
+    const id = $('nb-id').value;
     const nombre = $('nb-nombre').value.trim();
     const slug = $('nb-slug').value.trim().toLowerCase();
     const whatsapp = $('nb-whatsapp').value.trim();
+    const direccion = $('nb-direccion').value.trim();
     if (!nombre || !slug) return aviso('msg-barberia', false, 'Nombre y slug son obligatorios.');
 
+    if (id) {
+      const res = await api('PATCH', 'barberia', `id=eq.${id}`, { nombre, whatsapp_admin: whatsapp, direccion });
+      if (res.ok) {
+        aviso('msg-barberia', true, '✅ Guardado.');
+        limpiarFormBarberia();
+        cargarBarberias();
+      } else {
+        aviso('msg-barberia', false, 'No se pudo guardar.');
+      }
+      return;
+    }
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/barberia`, {
+      method: 'POST',
+      headers: headers({ 'Prefer': 'return=representation' }),
+      body: JSON.stringify({ nombre, slug, whatsapp_admin: whatsapp, direccion })
+    });
+
+    if (res.ok) {
+      const [nueva] = await res.json();
+      barberiaActual = nueva.id;
+      aviso('msg-barberia', true, '✅ Barbería creada. Ya estás trabajando sobre ella.');
+      limpiarFormBarberia();
+      cargarBarberias();
+    } else {
+      aviso('msg-barberia', false, 'Error — ¿el slug ya existe?');
+    }
+  }
     const res = await fetch(`${SUPABASE_URL}/rest/v1/barberia`, {
       method: 'POST',
       headers: headers({ 'Prefer': 'return=representation' }),
